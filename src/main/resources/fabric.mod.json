@@ -1,0 +1,39 @@
+{
+	"schemaVersion": 1,
+	"id": "block-event-separator",
+	"version": "${version}",
+
+	"name": "Block Event Separator",
+	"description": "",
+	"authors": [
+		"Space Walker"
+	],
+	"contributors": [
+	],
+	"contact": {
+	},
+
+	"license": "MIT Licence",
+
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"block.event.separator.BlockEventSeparator"
+		]
+	},
+	"mixins": [
+		"block-event-separator.mixins.json"
+	],
+
+	"depends": {
+		"minecraft": "1.18.2"
+	},
+
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://discord.gg/EJC9zkX"
+			}
+		}
+	}
+}

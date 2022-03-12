@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "block.event.separator.mixin",
+	"compatibilityLevel": "JAVA_16",
+	"mixins": [
+		"common.CommandsMixin",
+		"common.MinecraftServerMixin",
+		"common.ServerLevelMixin"
+	],
+	"client": [
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
