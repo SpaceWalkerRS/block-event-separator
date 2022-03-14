@@ -6,8 +6,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparator;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
+import block.event.separator.utils.MathUtils;
 
 import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
@@ -21,10 +23,14 @@ public class MinecraftServerMixin implements IMinecraftServer {
 	// if this is not initialized the first server tick will take a looooooong time...
 	private long tickStartTime_bes = Util.getMillis();
 
+	private long prevPrevExtraTickTime_bes;
+	private long prevExtraTickTime_bes;
+	private long extraTickTime_bes;
+
 	/** The greatest block event depth across all levels in the past tick. */
-	private long maxBlockEventDepth_bes;
+	private int maxBlockEventDepth_bes;
 	/** The greatest number of block events across all levels in the past tick. */
-	private long maxBlockEventTotal_bes;
+	private int maxBlockEventTotal_bes;
 
 	@Inject(
 		method = "waitUntilNextTick",
@@ -33,14 +39,26 @@ public class MinecraftServerMixin implements IMinecraftServer {
 		)
 	)
 	private void adjustTickEndTime(CallbackInfo ci) {
-		long baseTickTime = nextTickTime - tickStartTime_bes;
-		long extraTickTime = getExtraTickTime_bes(baseTickTime);
+		// Each tick is lengthened based on the number of block events
+		// that happened the ticks before. Pistons only animate in the
+		// second and third ticks of their existence, so those need to
+		// be lengthened. The tick after is also lengthened, both for
+		// compatibility with G4mespeed and convenience when working
+		// with 0-tick contraptions, which often operate in 3gt intervals.
 
-		// adjust the tick end time
+		long baseTickTime = nextTickTime - tickStartTime_bes;
+		long extraTickTime = MathUtils.max(prevPrevExtraTickTime_bes, prevExtraTickTime_bes, extraTickTime_bes);
+
+		// adjust tick end time
 		nextTickTime += extraTickTime;
 		delayedTasksMaxNextTickTime += extraTickTime;
-		// save the start time of the next tick
+		// save start time of the next tick
 		tickStartTime_bes = nextTickTime;
+
+		// save extra tick time for the next tick
+		prevPrevExtraTickTime_bes = prevExtraTickTime_bes;
+		prevExtraTickTime_bes = extraTickTime_bes;
+		extraTickTime_bes = getExtraTickTime_bes(baseTickTime);
 
 		// reset block event counters ahead of next tick
 		maxBlockEventDepth_bes = 0;
@@ -48,9 +66,9 @@ public class MinecraftServerMixin implements IMinecraftServer {
 	}
 
 	@Override
-	public void postBlockEvents_bes(long maxDepth, long total) {
-		maxBlockEventDepth_bes = Math.max(maxDepth, maxBlockEventDepth_bes);
-		maxBlockEventTotal_bes = Math.max(total, maxBlockEventTotal_bes);
+	public void postBlockEvents_bes() {
+		maxBlockEventDepth_bes = Math.max(maxBlockEventDepth_bes, BlockEventCounters.currentDepth);
+		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, BlockEventCounters.total);
 	}
 
 	private long getExtraTickTime_bes(long baseTickTime) {

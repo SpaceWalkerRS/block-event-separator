@@ -6,8 +6,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import block.event.separator.BlockEventCounters;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
@@ -22,10 +22,6 @@ public class ServerLevelMixin {
 	@Shadow private MinecraftServer server;
 	@Shadow private ObjectLinkedOpenHashSet<BlockEventData> blockEvents;
 
-	private long currentDepth_bes;
-	private long currentBatch_bes;
-	private long blockEventTotal_bes;
-
 	@Inject(
 		method = "runBlockEvents",
 		at = @At(
@@ -34,12 +30,24 @@ public class ServerLevelMixin {
 		)
 	)
 	private void onNextBlockEvent(CallbackInfo ci) {
-		if (currentBatch_bes == 0) {
-			currentDepth_bes++;
-			currentBatch_bes = blockEvents.size();
+		if (BlockEventCounters.currentBatch == 0) {
+			BlockEventCounters.currentDepth++;
+			BlockEventCounters.currentBatch = blockEvents.size();
 		}
 
-		currentBatch_bes--;
+		BlockEventCounters.currentBatch--;
+	}
+
+	@Inject(
+		method = "runBlockEvents",
+		at = @At(
+			value = "INVOKE",
+			shift = Shift.AFTER,
+			target = "Lnet/minecraft/server/players/PlayerList;broadcast(Lnet/minecraft/world/entity/player/Player;DDDDLnet/minecraft/resources/ResourceKey;Lnet/minecraft/network/protocol/Packet;)V"
+		)
+	)
+	private void onSuccessfulBlockEvent(CallbackInfo ci) {
+		BlockEventCounters.total++;
 	}
 
 	@Inject(
@@ -49,25 +57,13 @@ public class ServerLevelMixin {
 		)
 	)
 	private void afterBlockEvents(CallbackInfo ci) {
-		((IMinecraftServer)server).postBlockEvents_bes(currentDepth_bes, blockEventTotal_bes);
+		((IMinecraftServer)server).postBlockEvents_bes();
 
 		// Reset block event counters ahead of next tick.
 		// Depth is set to -1 because it is incremented
 		// before the first block event is processed.
-		currentDepth_bes = -1;
-		currentBatch_bes = 0;
-		blockEventTotal_bes = 0;
-	}
-
-	@Inject(
-		method = "doBlockEvent",
-		at = @At(
-			value = "INVOKE",
-			shift = Shift.BEFORE,
-			target = "Lnet/minecraft/world/level/block/state/BlockState;triggerEvent(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;II)Z"
-		)
-	)
-	private void onBlockEvent(CallbackInfoReturnable<Boolean> cir) {
-		blockEventTotal_bes++;
+		BlockEventCounters.currentDepth = -1;
+		BlockEventCounters.currentBatch = 0;
+		BlockEventCounters.total = 0;
 	}
 }

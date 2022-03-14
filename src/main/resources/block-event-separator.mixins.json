@@ -4,11 +4,15 @@
 	"package": "block.event.separator.mixin",
 	"compatibilityLevel": "JAVA_16",
 	"mixins": [
+		"common.ClientboundBlockEventPacketMixin",
 		"common.CommandsMixin",
 		"common.MinecraftServerMixin",
 		"common.ServerLevelMixin"
 	],
 	"client": [
+		"client.ClientPacketListenerMixin",
+		"client.PistonMovingBlockEntityMixin",
+		"client.TimerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
