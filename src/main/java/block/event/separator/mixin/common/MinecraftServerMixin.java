@@ -80,7 +80,7 @@ public class MinecraftServerMixin implements IMinecraftServer {
 	private long getExtraTickLength_bes(long baseTickLength) {
 		long separations = switch (BlockEventSeparator.mode) {
 			case DEPTH -> maxBlockEventDepth_bes;
-			case TOTAL -> maxBlockEventTotal_bes;
+			case INDEX -> maxBlockEventTotal_bes;
 			default    -> 0;
 		};
 

@@ -43,7 +43,7 @@ public class ClientboundBlockEventPacketMixin implements IClientboundBlockEventP
 	private void onInit(BlockPos pos, Block block, int type, int data, CallbackInfo ci) {
 		animationOffset_bes = switch (BlockEventSeparator.mode) {
 			case DEPTH -> BlockEventCounters.currentDepth;
-			case TOTAL -> BlockEventCounters.total;
+			case INDEX -> BlockEventCounters.total;
 			default    -> 0;
 		};
 	}

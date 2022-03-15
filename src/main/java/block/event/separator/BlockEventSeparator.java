@@ -25,8 +25,8 @@ public class BlockEventSeparator implements ModInitializer {
 	public static enum Mode {
 
 		OFF(0, "off", ""),
-		DEPTH(1, "depth", "Block events are separated based on their depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating at the same time."),
-		TOTAL(2, "total", "Block events are separated based on the order in which they were executed. Each block event starts animating 1gt after the previous.");
+		DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time."),
+		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time.");
 
 		private static final Mode[] ALL;
 		private static final Map<String, Mode> BY_NAME;
