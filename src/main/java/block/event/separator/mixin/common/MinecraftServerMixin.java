@@ -21,11 +21,15 @@ public class MinecraftServerMixin implements IMinecraftServer {
 	@Shadow private long delayedTasksMaxNextTickTime;
 
 	// if this is not initialized the first server tick will take a looooooong time...
-	private long tickStartTime_bes = Util.getMillis();
+	/** The start time of the current tick. */
+	private long tickTime_bes = Util.getMillis();
 
-	private long prevPrevExtraTickTime_bes;
-	private long prevExtraTickTime_bes;
-	private long extraTickTime_bes;
+	// These are the tick lengths based only on the number of block
+	// events that tick. The actual length of any tick might be longer
+	// due to block events in previous ticks.
+	private long prevPrevTickLength_bes;
+	private long prevTickLength_bes;
+	private long tickLength_bes;
 
 	/** The greatest block event depth across all levels in the past tick. */
 	private int maxBlockEventDepth_bes;
@@ -44,21 +48,23 @@ public class MinecraftServerMixin implements IMinecraftServer {
 		// second and third ticks of their existence, so those need to
 		// be lengthened too, to keep the animations smooth.
 
-		long baseTickTime = nextTickTime - tickStartTime_bes;
+		long baseTickLength = nextTickTime - tickTime_bes;
+		long extraTickLength = getExtraTickLength_bes(baseTickLength);
 
-		// save extra tick time for the next ticks
-		prevPrevExtraTickTime_bes = prevExtraTickTime_bes;
-		prevExtraTickTime_bes = extraTickTime_bes;
-		extraTickTime_bes = getExtraTickTime_bes(baseTickTime);
+		prevPrevTickLength_bes = prevTickLength_bes;
+		prevTickLength_bes = tickLength_bes;
+		tickLength_bes = baseTickLength + extraTickLength;
 
-		long extraTickTime = MathUtils.max(prevPrevExtraTickTime_bes, prevExtraTickTime_bes, extraTickTime_bes);
+		// determine length of this tick
+		long tickLength = MathUtils.max(prevPrevTickLength_bes, prevTickLength_bes, tickLength_bes);
 
 		// adjust next tick time
-		nextTickTime += extraTickTime;
-		delayedTasksMaxNextTickTime += extraTickTime;
+		extraTickLength = tickLength - baseTickLength;
+		nextTickTime += extraTickLength;
+		delayedTasksMaxNextTickTime += extraTickLength;
 
 		// save start time of the next tick
-		tickStartTime_bes = nextTickTime;
+		tickTime_bes = nextTickTime;
 
 		// reset block event counters ahead of next tick
 		maxBlockEventDepth_bes = 0;
@@ -71,13 +77,13 @@ public class MinecraftServerMixin implements IMinecraftServer {
 		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, BlockEventCounters.total);
 	}
 
-	private long getExtraTickTime_bes(long baseTickTime) {
+	private long getExtraTickLength_bes(long baseTickLength) {
 		long separations = switch (BlockEventSeparator.mode) {
 			case DEPTH -> maxBlockEventDepth_bes;
 			case TOTAL -> maxBlockEventTotal_bes;
 			default    -> 0;
 		};
 
-		return separations == 0 ? 0 : baseTickTime * (separations - 1);
+		return separations == 0 ? 0 : baseTickLength * (separations - 1);
 	}
 }

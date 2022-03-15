@@ -10,6 +10,7 @@
 		"common.ServerLevelMixin"
 	],
 	"client": [
+		"client.BlockableEventLoopMixin",
 		"client.BlockEntityMixin",
 		"client.ClientPacketListenerMixin",
 		"client.MinecraftMixin",

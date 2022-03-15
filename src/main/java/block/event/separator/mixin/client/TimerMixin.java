@@ -20,10 +20,16 @@ public class TimerMixin {
 	@Shadow private float partialTick;
 	@Shadow private float tickDelta;
 
+	// These are the tick lengths based only on the number of block
+	// events that tick. The actual length of any tick might be longer
+	// due to block events in previous ticks.
+	private float prevPrevTickLength_bes;
+	private float prevTickLength_bes;
+	private float tickLength_bes;
+
 	// These must be initialized as 1 or the client freezes on startup.
 	private float prevTpsFactor_bes = 1.0F;
 	private float tpsFactor_bes = 1.0F;
-	private float minTpsFactor_bes = 1.0F;
 
 	private boolean newTick_bes;
 
@@ -43,21 +49,24 @@ public class TimerMixin {
 		// be lengthened too, to keep the animations smooth.
 
 		if (newTick_bes) {
-			long maxOffset = Math.max(0, BlockEventCounters.maxOffset);
-			float extraTickTime = maxOffset * msPerTick;
-			float nextTickTime = msPerTick + extraTickTime;
+			long maxOffset = BlockEventCounters.maxOffset;
+			float extraTickLength = maxOffset * msPerTick;
 
-			float prevPrevTpsFactor = prevTpsFactor_bes;
+			prevPrevTickLength_bes = prevTickLength_bes;
+			prevTickLength_bes = tickLength_bes;
+			tickLength_bes = msPerTick + extraTickLength;
+
+			// determine length of this tick
+			float tickLength = MathUtils.max(prevPrevTickLength_bes, prevTickLength_bes, tickLength_bes);
+
 			prevTpsFactor_bes = tpsFactor_bes;
-			tpsFactor_bes = msPerTick / nextTickTime;
-
-			minTpsFactor_bes = MathUtils.min(prevPrevTpsFactor, prevTpsFactor_bes, tpsFactor_bes);
+			tpsFactor_bes = msPerTick / tickLength;
 
 			// adjust partial tick to new tick length
-			partialTick *= minTpsFactor_bes;
+			partialTick *= (tpsFactor_bes / prevTpsFactor_bes);
 		}
 
-		tickDelta *= minTpsFactor_bes;
+		tickDelta *= tpsFactor_bes;
 	}
 
 	@Inject(

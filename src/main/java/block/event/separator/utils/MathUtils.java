@@ -7,8 +7,8 @@ public class MathUtils {
 		return l > l2 ? l : l2;
 	}
 
-	public static float min(float f0, float f1, float f2) {
-		float f = f0 < f1 ? f0 : f1;
-		return f < f2 ? f : f2;
+	public static float max(float f0, float f1, float f2) {
+		float f = f0 > f1 ? f0 : f1;
+		return f > f2 ? f : f2;
 	}
 }

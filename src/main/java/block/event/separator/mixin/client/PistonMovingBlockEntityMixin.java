@@ -39,7 +39,9 @@ public class PistonMovingBlockEntityMixin extends BlockEntity implements IBlockE
 		float offset = BlockEventCounters.currentOffset;
 		float range = BlockEventCounters.maxOffset + 1;
 
-		startProgress_bes = (range == 0) ? 0.0F : offset / (range * TICKS_TO_EXTEND);
+		if (offset > 0 && range > 0) {
+			startProgress_bes = offset / (range * TICKS_TO_EXTEND);
+		}
 	}
 
 	@Inject(

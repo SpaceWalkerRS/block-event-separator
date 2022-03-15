@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventCounters;
+import block.event.separator.interfaces.mixin.IBlockableEventLoop;
 import block.event.separator.interfaces.mixin.IMinecraft;
 
 import net.minecraft.client.Minecraft;
@@ -19,7 +20,7 @@ import net.minecraft.client.Timer;
 import net.minecraft.client.multiplayer.ClientLevel;
 
 @Mixin(Minecraft.class)
-public class MinecraftMixin implements IMinecraft {
+public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 
 	@Shadow private ClientLevel level;
 	@Shadow private Timer timer;
@@ -93,6 +94,13 @@ public class MinecraftMixin implements IMinecraft {
 		}
 	}
 
+	@Override
+	public boolean shouldSkipTasks_bes() {
+		// No block changes should occur while block events are
+		// being processed to prevent ghost blocks from forming.
+		return doingBlockEvents_bes;
+	}
+
 	private void doAllBlockEvents_bes() {
 		while (!blockEvents_bes.isEmpty()) {
 			doBlockEvent(blockEvents_bes.poll());
@@ -118,7 +126,7 @@ public class MinecraftMixin implements IMinecraft {
 	}
 
 	private void doNextBlockEvents_bes() {
-		// Compute the last offset that should be processed this frame.
+		// compute the last offset that should be processed this frame
 		long range = BlockEventCounters.maxOffset + 1;
 		long lastOffset = (long)(timer.partialTick * range);
 
@@ -138,7 +146,7 @@ public class MinecraftMixin implements IMinecraft {
 
 		if (!doingBlockEvents_bes) {
 			BlockEventCounters.currentOffset = -1;
-			BlockEventCounters.maxOffset = -1;
+			BlockEventCounters.maxOffset = 0;
 		}
 	}
 

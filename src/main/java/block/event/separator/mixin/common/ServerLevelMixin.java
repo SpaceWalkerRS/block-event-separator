@@ -25,8 +25,21 @@ public class ServerLevelMixin {
 	@Inject(
 		method = "runBlockEvents",
 		at = @At(
+			value = "HEAD"
+		)
+	)
+	private void preBlockEvents(CallbackInfo ci) {
+		BlockEventCounters.currentDepth = 0;
+		BlockEventCounters.currentBatch = blockEvents.size();
+		BlockEventCounters.total = 0;
+	}
+
+	@Inject(
+		method = "runBlockEvents",
+		at = @At(
 			value = "INVOKE",
-			target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;isEmpty()Z"
+			shift = Shift.BEFORE,
+			target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;removeFirst()Ljava/lang/Object;"
 		)
 	)
 	private void onNextBlockEvent(CallbackInfo ci) {
@@ -56,14 +69,7 @@ public class ServerLevelMixin {
 			value = "RETURN"
 		)
 	)
-	private void afterBlockEvents(CallbackInfo ci) {
+	private void postBlockEvents(CallbackInfo ci) {
 		((IMinecraftServer)server).postBlockEvents_bes();
-
-		// Reset block event counters ahead of next tick.
-		// Depth is set to -1 because it is incremented
-		// before the first block event is processed.
-		BlockEventCounters.currentDepth = -1;
-		BlockEventCounters.currentBatch = 0;
-		BlockEventCounters.total = 0;
 	}
 }
