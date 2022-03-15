@@ -40,16 +40,19 @@ public class ServerLevelMixin {
 		at = @At(
 			value = "INVOKE",
 			shift = Shift.BEFORE,
-			target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;removeFirst()Ljava/lang/Object;"
+			ordinal = 0,
+			target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;isEmpty()Z"
 		)
 	)
 	private void onNextBlockEvent(CallbackInfo ci) {
-		if (BlockEventCounters.currentBatch == 0) {
-			BlockEventCounters.currentDepth++;
-			BlockEventCounters.currentBatch = blockEvents.size();
-		}
+		if (!blockEvents.isEmpty()) {
+			if (BlockEventCounters.currentBatch == 0) {
+				BlockEventCounters.currentDepth++;
+				BlockEventCounters.currentBatch = blockEvents.size();
+			}
 
-		BlockEventCounters.currentBatch--;
+			BlockEventCounters.currentBatch--;
+		}
 	}
 
 	@Inject(

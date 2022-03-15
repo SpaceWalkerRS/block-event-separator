@@ -49,8 +49,8 @@ public class MinecraftServerMixin implements IMinecraftServer {
 		prevPrevMaxOffset_bes = prevMaxOffset_bes;
 		prevMaxOffset_bes = maxOffset_bes;
 		maxOffset_bes = switch (BlockEventSeparator.mode) {
-			case DEPTH -> maxBlockEventDepth_bes;
-			case INDEX -> maxBlockEventTotal_bes;
+			case DEPTH -> maxBlockEventDepth_bes;     // depth is zero-indexed
+			case INDEX -> maxBlockEventTotal_bes - 1; // total is not
 			default    -> 0;
 		};
 
@@ -68,9 +68,10 @@ public class MinecraftServerMixin implements IMinecraftServer {
 		// save start time of the next tick
 		tickTime_bes = nextTickTime;
 
-		// reset block event counters ahead of next tick
-		maxBlockEventDepth_bes = 0;
-		maxBlockEventTotal_bes = 0;
+		// reset block event counters ahead of next tick to the lowest
+		// values for which there is no block event separation
+		maxBlockEventDepth_bes = 0; // depth is zero-indexed
+		maxBlockEventTotal_bes = 1; // total is not
 	}
 
 	@Override

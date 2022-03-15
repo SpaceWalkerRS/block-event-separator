@@ -51,7 +51,7 @@ public class TimerMixin {
 			prevMaxOffset_bes = maxOffset_bes;
 			maxOffset_bes = BlockEventCounters.maxOffset;
 
-			// Determine the offset that will be used to lengthen the current tick.
+			// determine the offset that will be used to lengthen the current tick
 			int maxOffset = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 
 			// determine length of this tick

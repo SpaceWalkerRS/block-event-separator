@@ -40,7 +40,7 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 		)
 	)
 	private void preTick(boolean isRunning, CallbackInfo ci, long time, int ticksThisFrame) {
-		inFirstFrameOfTick_bes = ticksThisFrame > 0;
+		inFirstFrameOfTick_bes = (ticksThisFrame > 0);
 
 		if (level == null) {
 			// Discard block events when switching
@@ -82,6 +82,10 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 		}
 		if (doingBlockEvents_bes) {
 			doNextBlockEvents_bes();
+		}
+		if (!doingBlockEvents_bes) {
+			BlockEventCounters.currentOffset = -1;
+			BlockEventCounters.maxOffset = 0;
 		}
 	}
 
@@ -143,11 +147,6 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 		}
 
 		doingBlockEvents_bes = !blockEvents_bes.isEmpty();
-
-		if (!doingBlockEvents_bes) {
-			BlockEventCounters.currentOffset = -1;
-			BlockEventCounters.maxOffset = 0;
-		}
 	}
 
 	private void doBlockEvent(BlockEvent be) {
