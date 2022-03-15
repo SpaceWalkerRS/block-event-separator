@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEventCounters;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
@@ -54,22 +55,22 @@ public class ServerLevelMixin {
 	@Inject(
 		method = "runBlockEvents",
 		at = @At(
-			value = "INVOKE",
-			shift = Shift.AFTER,
-			target = "Lnet/minecraft/server/players/PlayerList;broadcast(Lnet/minecraft/world/entity/player/Player;DDDDLnet/minecraft/resources/ResourceKey;Lnet/minecraft/network/protocol/Packet;)V"
-		)
-	)
-	private void onSuccessfulBlockEvent(CallbackInfo ci) {
-		BlockEventCounters.total++;
-	}
-
-	@Inject(
-		method = "runBlockEvents",
-		at = @At(
 			value = "RETURN"
 		)
 	)
 	private void postBlockEvents(CallbackInfo ci) {
 		((IMinecraftServer)server).postBlockEvents_bes();
+	}
+
+	@Inject(
+		method = "doBlockEvent",
+		at = @At(
+			value = "RETURN"
+		)
+	)
+	private void onSuccessfulBlockEvent(CallbackInfoReturnable<Boolean> cir) {
+		if (cir.getReturnValue()) {
+			BlockEventCounters.total++;
+		}
 	}
 }
