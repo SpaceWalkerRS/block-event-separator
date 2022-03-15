@@ -107,7 +107,7 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 
 	private void doAllBlockEvents_bes() {
 		while (!blockEvents_bes.isEmpty()) {
-			doBlockEvent(blockEvents_bes.poll());
+			doBlockEvent_bes(blockEvents_bes.poll());
 		}
 
 		doingBlockEvents_bes = false;
@@ -118,12 +118,15 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 			BlockEvent blockEvent = blockEvents_bes.peek();
 			int offset = blockEvent.animationOffset;
 
+			// At the start of the tick, the first block event should
+			// have offset 0, so any block events with a higher offset
+			// are assumed to be from the previous tick.
 			if (offset == 0) {
 				break;
 			}
 
 			blockEvents_bes.poll();
-			doBlockEvent(blockEvent);
+			doBlockEvent_bes(blockEvent);
 		}
 
 		doingBlockEvents_bes = !blockEvents_bes.isEmpty();
@@ -143,13 +146,13 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 			}
 
 			blockEvents_bes.poll();
-			doBlockEvent(blockEvent);
+			doBlockEvent_bes(blockEvent);
 		}
 
 		doingBlockEvents_bes = !blockEvents_bes.isEmpty();
 	}
 
-	private void doBlockEvent(BlockEvent be) {
+	private void doBlockEvent_bes(BlockEvent be) {
 		BlockEventCounters.currentOffset = be.animationOffset;
 		level.blockEvent(be.pos, be.block, be.type, be.data);
 	}
