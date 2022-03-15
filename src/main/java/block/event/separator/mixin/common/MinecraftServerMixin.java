@@ -38,27 +38,27 @@ public class MinecraftServerMixin implements IMinecraftServer {
 			value = "HEAD"
 		)
 	)
-	private void adjustTickEndTime(CallbackInfo ci) {
+	private void adjustNextTickTime(CallbackInfo ci) {
 		// Each tick is lengthened based on the number of block events
 		// that happened the ticks before. Pistons only animate in the
 		// second and third ticks of their existence, so those need to
-		// be lengthened. The tick after is also lengthened, both for
-		// compatibility with G4mespeed and convenience when working
-		// with 0-tick contraptions, which often operate in 3gt intervals.
+		// be lengthened too, to keep the animations smooth.
 
 		long baseTickTime = nextTickTime - tickStartTime_bes;
-		long extraTickTime = MathUtils.max(prevPrevExtraTickTime_bes, prevExtraTickTime_bes, extraTickTime_bes);
 
-		// adjust tick end time
-		nextTickTime += extraTickTime;
-		delayedTasksMaxNextTickTime += extraTickTime;
-		// save start time of the next tick
-		tickStartTime_bes = nextTickTime;
-
-		// save extra tick time for the next tick
+		// save extra tick time for the next ticks
 		prevPrevExtraTickTime_bes = prevExtraTickTime_bes;
 		prevExtraTickTime_bes = extraTickTime_bes;
 		extraTickTime_bes = getExtraTickTime_bes(baseTickTime);
+
+		long extraTickTime = MathUtils.max(prevPrevExtraTickTime_bes, prevExtraTickTime_bes, extraTickTime_bes);
+
+		// adjust next tick time
+		nextTickTime += extraTickTime;
+		delayedTasksMaxNextTickTime += extraTickTime;
+
+		// save start time of the next tick
+		tickStartTime_bes = nextTickTime;
 
 		// reset block event counters ahead of next tick
 		maxBlockEventDepth_bes = 0;

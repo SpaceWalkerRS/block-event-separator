@@ -1,22 +1,29 @@
 package block.event.separator.mixin.client;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.BlockEventCounters;
+import block.event.separator.BlockEvent;
 import block.event.separator.interfaces.mixin.IClientboundBlockEventPacket;
+import block.event.separator.interfaces.mixin.IMinecraft;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 
 @Mixin(ClientPacketListener.class)
 public class ClientPacketListenerMixin {
 
+	@Shadow @Final private Minecraft minecraft;
+
 	@Inject(
 		method = "handleBlockEvent",
+		cancellable = true,
 		at = @At(
 			value = "INVOKE",
 			shift = Shift.BEFORE,
@@ -24,9 +31,9 @@ public class ClientPacketListenerMixin {
 		)
 	)
 	private void onBlockEvent(ClientboundBlockEventPacket packet, CallbackInfo ci) {
-		int animationOffset = ((IClientboundBlockEventPacket)packet).getAnimationOffset_bes();
+		BlockEvent blockEvent = ((IClientboundBlockEventPacket)packet).getBlockEvent_bes();
+		((IMinecraft)minecraft).queueBlockEvent_bes(blockEvent);
 
-		BlockEventCounters.currentOffset = animationOffset;
-		BlockEventCounters.maxOffset = Math.max(BlockEventCounters.maxOffset, animationOffset);
+		ci.cancel();
 	}
 }

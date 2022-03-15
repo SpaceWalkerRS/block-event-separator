@@ -25,7 +25,7 @@ public class TimerMixin {
 	private float tpsFactor_bes = 1.0F;
 	private float minTpsFactor_bes = 1.0F;
 
-	private boolean newTick;
+	private boolean newTick_bes;
 
 	@Inject(
 		method = "advanceTime",
@@ -36,16 +36,15 @@ public class TimerMixin {
 			target = "Lnet/minecraft/client/Timer;partialTick:F"
 		)
 	)
-	private void beforeAdvanceTime(long time, CallbackInfoReturnable<Integer> cir) {
+	private void preAdvanceTime(long time, CallbackInfoReturnable<Integer> cir) {
 		// Each tick is lengthened based on the number of block events
 		// that happened the ticks before. Pistons only animate in the
 		// second and third ticks of their existence, so those need to
-		// be lengthened. The tick after is also lengthened, both for
-		// compatibility with G4mespeed and convenience when working
-		// with 0-tick contraptions, which often operate in 3gt intervals.
+		// be lengthened too, to keep the animations smooth.
 
-		if (newTick) {
-			float extraTickTime = BlockEventCounters.maxOffset * msPerTick;
+		if (newTick_bes) {
+			long maxOffset = Math.max(0, BlockEventCounters.maxOffset);
+			float extraTickTime = maxOffset * msPerTick;
 			float nextTickTime = msPerTick + extraTickTime;
 
 			float prevPrevTpsFactor = prevTpsFactor_bes;
@@ -56,10 +55,6 @@ public class TimerMixin {
 
 			// adjust partial tick to new tick length
 			partialTick *= minTpsFactor_bes;
-
-			// reset block event counters ahead of next tick
-			BlockEventCounters.currentOffset = 0;
-			BlockEventCounters.maxOffset = 0;
 		}
 
 		tickDelta *= minTpsFactor_bes;
@@ -71,7 +66,7 @@ public class TimerMixin {
 			value = "RETURN"
 		)
 	)
-	private void afterAdvanceTime(long time, CallbackInfoReturnable<Integer> cir) {
-		newTick = cir.getReturnValue() > 0;
+	private void postAdvanceTime(long time, CallbackInfoReturnable<Integer> cir) {
+		newTick_bes = cir.getReturnValue() > 0;
 	}
 }

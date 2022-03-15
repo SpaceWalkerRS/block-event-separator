@@ -2,8 +2,8 @@ package block.event.separator.interfaces.mixin;
 
 import block.event.separator.BlockEvent;
 
-public interface IClientboundBlockEventPacket {
+public interface IMinecraft {
 
-	public BlockEvent getBlockEvent_bes();
+	public void queueBlockEvent_bes(BlockEvent be);
 
 }
