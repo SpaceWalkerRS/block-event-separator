@@ -24,12 +24,10 @@ public class MinecraftServerMixin implements IMinecraftServer {
 	/** The start time of the current tick. */
 	private long tickTime_bes = Util.getMillis();
 
-	// These are the tick lengths based only on the number of block
-	// events that tick. The actual length of any tick might be longer
-	// due to block events in previous ticks.
-	private long prevPrevTickLength_bes;
-	private long prevTickLength_bes;
-	private long tickLength_bes;
+	// These are the maximum animation offsets of the past few ticks.
+	private int prevPrevMaxOffset_bes;
+	private int prevMaxOffset_bes;
+	private int maxOffset_bes;
 
 	/** The greatest block event depth across all levels in the past tick. */
 	private int maxBlockEventDepth_bes;
@@ -48,18 +46,22 @@ public class MinecraftServerMixin implements IMinecraftServer {
 		// second and third ticks of their existence, so those need to
 		// be lengthened too, to keep the animations smooth.
 
+		prevPrevMaxOffset_bes = prevMaxOffset_bes;
+		prevMaxOffset_bes = maxOffset_bes;
+		maxOffset_bes = switch (BlockEventSeparator.mode) {
+			case DEPTH -> maxBlockEventDepth_bes;
+			case INDEX -> maxBlockEventTotal_bes;
+			default    -> 0;
+		};
+
+		// determine the offset that will be used to lengthen the current tick
+		int maxOffset = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+
+		// determine extra tick length
 		long baseTickLength = nextTickTime - tickTime_bes;
-		long extraTickLength = getExtraTickLength_bes(baseTickLength);
-
-		prevPrevTickLength_bes = prevTickLength_bes;
-		prevTickLength_bes = tickLength_bes;
-		tickLength_bes = baseTickLength + extraTickLength;
-
-		// determine length of this tick
-		long tickLength = MathUtils.max(prevPrevTickLength_bes, prevTickLength_bes, tickLength_bes);
+		long extraTickLength = maxOffset * baseTickLength;
 
 		// adjust next tick time
-		extraTickLength = tickLength - baseTickLength;
 		nextTickTime += extraTickLength;
 		delayedTasksMaxNextTickTime += extraTickLength;
 
@@ -75,15 +77,5 @@ public class MinecraftServerMixin implements IMinecraftServer {
 	public void postBlockEvents_bes() {
 		maxBlockEventDepth_bes = Math.max(maxBlockEventDepth_bes, BlockEventCounters.currentDepth);
 		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, BlockEventCounters.total);
-	}
-
-	private long getExtraTickLength_bes(long baseTickLength) {
-		long separations = switch (BlockEventSeparator.mode) {
-			case DEPTH -> maxBlockEventDepth_bes;
-			case INDEX -> maxBlockEventTotal_bes;
-			default    -> 0;
-		};
-
-		return separations == 0 ? 0 : baseTickLength * (separations - 1);
 	}
 }

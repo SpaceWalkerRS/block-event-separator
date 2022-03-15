@@ -20,12 +20,10 @@ public class TimerMixin {
 	@Shadow private float partialTick;
 	@Shadow private float tickDelta;
 
-	// These are the tick lengths based only on the number of block
-	// events that tick. The actual length of any tick might be longer
-	// due to block events in previous ticks.
-	private float prevPrevTickLength_bes;
-	private float prevTickLength_bes;
-	private float tickLength_bes;
+	// These are the maximum animation offsets of the past few ticks.
+	private int prevPrevMaxOffset_bes;
+	private int prevMaxOffset_bes;
+	private int maxOffset_bes;
 
 	// These must be initialized as 1 or the client freezes on startup.
 	private float prevTpsFactor_bes = 1.0F;
@@ -49,15 +47,16 @@ public class TimerMixin {
 		// be lengthened too, to keep the animations smooth.
 
 		if (newTick_bes) {
-			long maxOffset = BlockEventCounters.maxOffset;
-			float extraTickLength = maxOffset * msPerTick;
+			prevPrevMaxOffset_bes = prevMaxOffset_bes;
+			prevMaxOffset_bes = maxOffset_bes;
+			maxOffset_bes = BlockEventCounters.maxOffset;
 
-			prevPrevTickLength_bes = prevTickLength_bes;
-			prevTickLength_bes = tickLength_bes;
-			tickLength_bes = msPerTick + extraTickLength;
+			// Determine the offset that will be used to lengthen the current tick.
+			int maxOffset = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 
 			// determine length of this tick
-			float tickLength = MathUtils.max(prevPrevTickLength_bes, prevTickLength_bes, tickLength_bes);
+			float extraTickLength = maxOffset * msPerTick;
+			float tickLength = msPerTick + extraTickLength;
 
 			prevTpsFactor_bes = tpsFactor_bes;
 			tpsFactor_bes = msPerTick / tickLength;
