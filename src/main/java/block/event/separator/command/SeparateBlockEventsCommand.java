@@ -92,7 +92,7 @@ public class SeparateBlockEventsCommand {
 				append("] mode");
 		}
 
-		source.sendSuccess(text, false);
+		source.sendSuccess(text, true);
 
 		return Command.SINGLE_SUCCESS;
 	}
