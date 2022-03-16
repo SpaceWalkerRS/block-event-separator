@@ -9,18 +9,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEventCounters;
-import block.event.separator.interfaces.mixin.IBlockEntity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-@Mixin(PistonMovingBlockEntity.class)
-public class PistonMovingBlockEntityMixin extends BlockEntity implements IBlockEntity {
+@Mixin(
+	value = PistonMovingBlockEntity.class,
+	priority = 999
+)
+public class PistonMovingBlockEntityMixin extends BlockEntity {
 
 	@Shadow @Final private static int TICKS_TO_EXTEND;
+
+	@Shadow private float progress;
 
 	/** The progress at which this block entity starts animating. */
 	private float startProgress_bes;
@@ -48,27 +53,21 @@ public class PistonMovingBlockEntityMixin extends BlockEntity implements IBlockE
 		method = "getProgress",
 		cancellable = true,
 		at = @At(
-			value = "RETURN"
+			value = "HEAD"
 		)
 	)
 	private void adjustProgress(float partialTick, CallbackInfoReturnable<Float> cir) {
-		if (level.isClientSide() && startProgress_bes > 0.0F) {
-			float progress = cir.getReturnValue();
-			progress = adjustProgress_bes(progress);
-
-			cir.setReturnValue(progress);
-		}
-	}
-
-	@Override
-	public void onLevelSet_bes() {
 		if (level.isClientSide()) {
-			BlockState state = getBlockState();
-			PistonMovingBlockEntity blockEntity = (PistonMovingBlockEntity)(Object)this;
+			// For block event separation to work, pistons have to start animating
+			// right away, rather than after the first tick, like in Vanilla.
+			float p = ((progress * TICKS_TO_EXTEND) + partialTick) / TICKS_TO_EXTEND;
+			p = Mth.clamp(p, 0.0F, 1.0F);
 
-			// The block entity must be ticked upon placement
-			// to make sure it starts animating right away.
-			PistonMovingBlockEntity.tick(level, worldPosition, state, blockEntity);
+			if (startProgress_bes > 0.0F) {
+				p = adjustProgress_bes(p);
+			}
+
+			cir.setReturnValue(p);
 		}
 	}
 

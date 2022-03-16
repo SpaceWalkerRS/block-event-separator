@@ -14,6 +14,7 @@ import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventCounters;
 import block.event.separator.interfaces.mixin.IBlockableEventLoop;
 import block.event.separator.interfaces.mixin.IMinecraft;
+import block.event.separator.interfaces.mixin.ITimer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Timer;
@@ -42,15 +43,21 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 	private void preTick(boolean isRunning, CallbackInfo ci, long time, int ticksThisFrame) {
 		inFirstFrameOfTick_bes = (ticksThisFrame > 0);
 
+		if (inFirstFrameOfTick_bes) {
+			((ITimer)timer).onTick();
+		}
+
 		if (level == null) {
 			// Discard block events when switching
 			// dimensions or leaving the game.
 			blockEvents_bes.clear();
 			doingBlockEvents_bes = false;
 
+			BlockEventCounters.currentOffset = -1;
+			BlockEventCounters.maxOffset = 0;
+
 			return;
 		}
-
 		// If the frame rate is too low, no
 		// block event separation can occur.
 		if (ticksThisFrame > 1) {
@@ -82,10 +89,11 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 		}
 		if (doingBlockEvents_bes) {
 			doNextBlockEvents_bes();
-		}
-		if (!doingBlockEvents_bes) {
-			BlockEventCounters.currentOffset = -1;
-			BlockEventCounters.maxOffset = 0;
+
+			if (!doingBlockEvents_bes) {
+				BlockEventCounters.currentOffset = -1;
+				BlockEventCounters.maxOffset = 0;
+			}
 		}
 	}
 
@@ -111,6 +119,9 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 		}
 
 		doingBlockEvents_bes = false;
+
+		BlockEventCounters.currentOffset = -1;
+		BlockEventCounters.maxOffset = 0;
 	}
 
 	private void doOldBlockEvents_bes() {
