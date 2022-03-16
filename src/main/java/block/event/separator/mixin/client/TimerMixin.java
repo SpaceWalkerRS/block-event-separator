@@ -56,7 +56,7 @@ public class TimerMixin implements ITimer {
 		int maxOffset = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 
 		prevTpsFactor_bes = tpsFactor_bes;
-		tpsFactor_bes = maxOffset + 1;
+		tpsFactor_bes = 1.0F / (maxOffset + 1);
 
 		// adjust partial tick to new tick length
 		partialTick *= (tpsFactor_bes / prevTpsFactor_bes);
