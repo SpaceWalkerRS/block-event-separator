@@ -28,6 +28,9 @@
 	"depends": {
 		"minecraft": "1.18.x"
 	},
+	"breaks": {
+		"g4mespeed": "<=1.2.5"
+	},
 
 	"custom": {
 		"modmenu": {

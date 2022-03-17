@@ -1,6 +1,7 @@
 package block.event.separator.mixin.client;
 
 import java.util.LinkedList;
+import java.util.Queue;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -29,7 +30,7 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 	private boolean inFirstFrameOfTick_bes;
 	private boolean doingBlockEvents_bes;
 
-	private final LinkedList<BlockEvent> blockEvents_bes = new LinkedList<>();
+	private final Queue<BlockEvent> blockEvents_bes = new LinkedList<>();
 	
 	@Inject(
 		method = "runTick",
@@ -44,7 +45,7 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 		inFirstFrameOfTick_bes = (ticksThisFrame > 0);
 
 		if (inFirstFrameOfTick_bes) {
-			((ITimer)timer).onTick();
+			((ITimer)timer).onTick_bes();
 		}
 
 		if (level == null) {
@@ -52,17 +53,16 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 			// dimensions or leaving the game.
 			blockEvents_bes.clear();
 			doingBlockEvents_bes = false;
-
-			BlockEventCounters.currentOffset = -1;
-			BlockEventCounters.maxOffset = 0;
-
+		} else if (ticksThisFrame > 1) {
+			// If the frame rate is too low, no
+			// block event separation can occur.
+			doAllBlockEvents_bes();
+		} else {
 			return;
 		}
-		// If the frame rate is too low, no
-		// block event separation can occur.
-		if (ticksThisFrame > 1) {
-			doAllBlockEvents_bes();
-		}
+
+		BlockEventCounters.currentOffset = -1;
+		BlockEventCounters.maxOffset = 0;
 	}
 
 	@Inject(
@@ -89,11 +89,10 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 		}
 		if (doingBlockEvents_bes) {
 			doNextBlockEvents_bes();
-
-			if (!doingBlockEvents_bes) {
-				BlockEventCounters.currentOffset = -1;
-				BlockEventCounters.maxOffset = 0;
-			}
+		}
+		if (blockEvents_bes.isEmpty()) {
+			BlockEventCounters.currentOffset = -1;
+			BlockEventCounters.maxOffset = 0;
 		}
 	}
 
@@ -119,9 +118,6 @@ public class MinecraftMixin implements IMinecraft, IBlockableEventLoop {
 		}
 
 		doingBlockEvents_bes = false;
-
-		BlockEventCounters.currentOffset = -1;
-		BlockEventCounters.maxOffset = 0;
 	}
 
 	private void doOldBlockEvents_bes() {

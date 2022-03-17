@@ -42,7 +42,7 @@ public class TimerMixin implements ITimer {
 	}
 
 	@Override
-	public void onTick() {
+	public void onTick_bes() {
 		// Each tick is lengthened based on the number of block events
 		// that happened the ticks before. Pistons only animate in the
 		// second and third ticks of their existence, so those need to
