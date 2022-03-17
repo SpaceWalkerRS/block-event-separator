@@ -6,13 +6,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventCounters;
-import block.event.separator.BlockEventSeparator;
-import block.event.separator.interfaces.mixin.IClientboundBlockEventPacket;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.world.level.block.Block;
 
@@ -25,7 +23,7 @@ import net.minecraft.world.level.block.Block;
 	value = ClientboundBlockEventPacket.class,
 	priority = Integer.MAX_VALUE
 )
-public class ClientboundBlockEventPacketMixin implements IClientboundBlockEventPacket {
+public class ClientboundBlockEventPacketMixin {
 
 	@Shadow private BlockPos pos;
 	@Shadow private Block block;
@@ -33,6 +31,7 @@ public class ClientboundBlockEventPacketMixin implements IClientboundBlockEventP
 	@Shadow private int b1;
 
 	private int animationOffset_bes;
+	private int maxOffset_bes;
 
 	@Inject(
 		method = "<init>(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;II)V",
@@ -41,11 +40,8 @@ public class ClientboundBlockEventPacketMixin implements IClientboundBlockEventP
 		)
 	)
 	private void onInit(BlockPos pos, Block block, int type, int data, CallbackInfo ci) {
-		animationOffset_bes = switch (BlockEventSeparator.mode) {
-			case DEPTH -> BlockEventCounters.currentDepth; // depth is zero-indexed
-			case INDEX -> BlockEventCounters.total - 1;    // total is not
-			default    -> 0;
-		};
+		animationOffset_bes = BlockEventCounters.sCurrentOffset;
+		maxOffset_bes = BlockEventCounters.sMaxOffset;
 	}
 
 	@Inject(
@@ -56,6 +52,7 @@ public class ClientboundBlockEventPacketMixin implements IClientboundBlockEventP
 	)
 	private void onInit(FriendlyByteBuf buffer, CallbackInfo ci) {
 		animationOffset_bes = buffer.readInt();
+		maxOffset_bes = buffer.readInt();
 	}
 
 	@Inject(
@@ -66,10 +63,17 @@ public class ClientboundBlockEventPacketMixin implements IClientboundBlockEventP
 	)
 	private void onWrite(FriendlyByteBuf buffer, CallbackInfo ci) {
 		buffer.writeInt(animationOffset_bes);
+		buffer.writeInt(maxOffset_bes);
 	}
 
-	@Override
-	public BlockEvent getBlockEvent_bes() {
-		return new BlockEvent(pos, block, b0, b1, animationOffset_bes);
+	@Inject(
+		method = "handle",
+		at = @At(
+			value = "HEAD"
+		)
+	)
+	private void onHandle(ClientGamePacketListener listener, CallbackInfo ci) {
+		BlockEventCounters.cCurrentOffset = animationOffset_bes;
+		BlockEventCounters.cMaxOffset = maxOffset_bes;
 	}
 }

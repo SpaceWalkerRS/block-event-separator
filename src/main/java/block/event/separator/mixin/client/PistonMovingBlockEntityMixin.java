@@ -41,8 +41,8 @@ public class PistonMovingBlockEntityMixin extends BlockEntity {
 		)
 	)
 	private void onInit(BlockPos pos, BlockState state, CallbackInfo ci) {
-		float offset = BlockEventCounters.currentOffset;
-		float range = BlockEventCounters.maxOffset + 1;
+		float offset = BlockEventCounters.cCurrentOffset;
+		float range = BlockEventCounters.cMaxOffset + 1;
 
 		if (offset > 0 && range > 0) {
 			startProgress_bes = offset / (range * TICKS_TO_EXTEND);

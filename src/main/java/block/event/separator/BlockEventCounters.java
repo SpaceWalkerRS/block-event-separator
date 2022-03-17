@@ -2,13 +2,13 @@ package block.event.separator;
 
 public class BlockEventCounters {
 
-	// animation offsets, used on the client
-	public static int currentOffset;
-	public static int maxOffset;
+	public static int subTicks;
+	public static int subTicksTarget;
 
-	// block event counters, used on the server
-	public static int currentDepth;
-	public static int currentBatch;
-	public static int total;
+	public static int cCurrentOffset;
+	public static int cMaxOffset;
+
+	public static int sCurrentOffset;
+	public static int sMaxOffset;
 
 }

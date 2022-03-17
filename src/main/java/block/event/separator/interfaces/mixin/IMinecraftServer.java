@@ -2,6 +2,10 @@ package block.event.separator.interfaces.mixin;
 
 public interface IMinecraftServer {
 
-	public void postBlockEvents_bes();
+	default boolean isPaused() {
+		return false;
+	}
+
+	public void postBlockEvents_bes(int maxDepth, int total);
 
 }
