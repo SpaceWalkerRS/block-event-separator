@@ -28,18 +28,13 @@ public class BlockEventSeparator implements ModInitializer {
 		DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time."),
 		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time.");
 
-		private static final Mode[] ALL;
 		private static final Map<String, Mode> BY_NAME;
 
 		static {
 
-			Mode[] modes = values();
-
-			ALL = new Mode[modes.length];
 			BY_NAME = new HashMap<>();
 
-			for (Mode mode : modes) {
-				ALL[mode.index] = mode;
+			for (Mode mode : values()) {
 				BY_NAME.put(mode.name, mode);
 			}
 		}
@@ -52,14 +47,6 @@ public class BlockEventSeparator implements ModInitializer {
 			this.index = index;
 			this.name = name;
 			this.description = description;
-		}
-
-		public static Mode fromIndex(int index) {
-			if (index >= 0 && index < ALL.length) {
-				return ALL[index];
-			}
-
-			return null;
 		}
 
 		public static Mode fromName(String name) {

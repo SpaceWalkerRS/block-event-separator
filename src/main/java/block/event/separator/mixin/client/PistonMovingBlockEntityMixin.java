@@ -60,7 +60,7 @@ public class PistonMovingBlockEntityMixin extends BlockEntity {
 		if (level.isClientSide()) {
 			// For block event separation to work, pistons have to start animating
 			// right away, rather than after the first tick, like in Vanilla.
-			float p = ((progress * TICKS_TO_EXTEND) + partialTick) / TICKS_TO_EXTEND;
+			float p = progress + (partialTick / TICKS_TO_EXTEND);
 			p = Mth.clamp(p, 0.0F, 1.0F);
 
 			if (startProgress_bes > 0.0F) {
