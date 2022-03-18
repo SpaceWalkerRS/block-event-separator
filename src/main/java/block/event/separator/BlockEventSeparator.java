@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import block.event.separator.compat.G4mespeed;
 import net.fabricmc.api.ModInitializer;
 
 public class BlockEventSeparator implements ModInitializer {
@@ -19,7 +20,7 @@ public class BlockEventSeparator implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-
+		G4mespeed.init();
 	}
 
 	public static enum Mode {

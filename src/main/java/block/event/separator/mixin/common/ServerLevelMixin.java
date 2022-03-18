@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
-import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparator;
+import block.event.separator.compat.G4mespeed;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 
@@ -43,6 +43,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	private int currentDepth_bes;
 	private int currentBatch_bes;
 	private int total_bes;
+
+	private int gcp_microtick; // field from G4mespeed Capture & Playback
 
 	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
 		super(data, dimension, holder, supplier, isClient, isDebug, seed);
@@ -99,6 +101,9 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void onSuccessfulBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
 		if (cir.getReturnValue()) {
+			// G4mespeed Capture & Playback can do multiple block events
+			// per cycle, in which case we have to adjust our depth value.
+			currentDepth_bes = Math.max(currentDepth_bes, gcp_microtick);
 			total_bes++;
 
 			int offset = switch (BlockEventSeparator.mode) {
@@ -126,24 +131,21 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 			successfulBlockEvents_bes.poll();
 			sendBlockEvent_bes(blockEvent);
-
 		}
 	}
 
 	private void sendBlockEvent_bes(BlockEvent be) {
-		BlockEventCounters.sCurrentOffset = be.animationOffset;
 		int x = be.pos.getX();
 		int y = be.pos.getY();
 		int z = be.pos.getZ();
-		float range = getBlockEventDistance_bes();
+		float range = getBlockEventRange_bes();
 		ResourceKey<Level> dimension = dimension();
 
 		Packet<?> packet = new ClientboundBlockEventPacket(be.pos, be.block, be.type, be.data);
 		server.getPlayerList().broadcast(null, x, y, z, range, dimension, packet);
 	}
 
-	// TODO: detect G4mespeed's block event distance
-	private float getBlockEventDistance_bes() {
-		return 64.0F;
+	private float getBlockEventRange_bes() {
+		return G4mespeed.getBlockEventDistance(64.0F);
 	}
 }

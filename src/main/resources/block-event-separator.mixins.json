@@ -4,12 +4,12 @@
 	"package": "block.event.separator.mixin",
 	"compatibilityLevel": "JAVA_16",
 	"mixins": [
-		"common.ClientboundBlockEventPacketMixin",
 		"common.CommandsMixin",
 		"common.MinecraftServerMixin",
 		"common.ServerLevelMixin"
 	],
 	"client": [
+		"client.ClientPacketListenerMixin",
 		"client.IntegratedServerMixin",
 		"client.MinecraftMixin",
 		"client.PistonMovingBlockEntityMixin",

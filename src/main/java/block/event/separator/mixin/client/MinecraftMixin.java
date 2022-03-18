@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import block.event.separator.BlockEventCounters;
+import block.event.separator.interfaces.mixin.IMinecraft;
 import block.event.separator.interfaces.mixin.ITimer;
-import block.event.separator.utils.MathUtils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Timer;
@@ -17,17 +17,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 
 @Mixin(Minecraft.class)
-public class MinecraftMixin {
+public class MinecraftMixin implements IMinecraft {
 
 	@Shadow private Timer timer;
 	@Shadow private MultiPlayerGameMode gameMode;
 	@Shadow private ClientLevel level;
 	@Shadow private boolean pause;
 
-	// These are the maximum animation offsets of the past few ticks.
-	private int prevPrevMaxOffset_bes;
-	private int prevMaxOffset_bes;
-	private int maxOffset_bes;
+	private int nextSubticksTarget_bes;
 
 	@Inject(
 		method = "runTick",
@@ -40,30 +37,13 @@ public class MinecraftMixin {
 	)
 	private void preTick(boolean isRunning, CallbackInfo ci, long time, int ticksThisFrame) {
 		if (!pause) {
-			if (BlockEventCounters.subTicks == 0) {
-				if (ticksThisFrame > 0) {
-					// Each new tick we save how much previous
-					// ticks have been lengthened.
-					prevPrevMaxOffset_bes = prevMaxOffset_bes;
-					prevMaxOffset_bes = maxOffset_bes;
-					maxOffset_bes = 0;
-				}
-				if (maxOffset_bes == 0) {
-					// New block events could arrive at any time
-					// within the tick, not just the start.
-					maxOffset_bes = BlockEventCounters.cMaxOffset;
-					BlockEventCounters.subTicksTarget = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
-				}
+			BlockEventCounters.subticks += ticksThisFrame;
+
+			if (BlockEventCounters.subticks > BlockEventCounters.subticksTarget) {
+				BlockEventCounters.subticks = 0;
+				BlockEventCounters.subticksTarget = nextSubticksTarget_bes;
+				nextSubticksTarget_bes = 0;
 			}
-
-			BlockEventCounters.subTicks += ticksThisFrame;
-
-			if (BlockEventCounters.subTicks > BlockEventCounters.subTicksTarget) {
-				BlockEventCounters.subTicks = 0;
-			}
-
-			BlockEventCounters.cCurrentOffset = -1;
-			BlockEventCounters.cMaxOffset = 0;
 		}
 
 		((ITimer)timer).adjustPartialTick_bes();
@@ -77,13 +57,26 @@ public class MinecraftMixin {
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {
-		if (BlockEventCounters.subTicks > 0) {
+		// Only allow client ticks to happen
+		// in the first subtick, skip the rest.
+		if (BlockEventCounters.subticks > 0) {
 			// keep packet handling going
 			if (!pause && level != null) {
 				gameMode.tick();
 			}
 
 			ci.cancel();
+		}
+	}
+
+	@Override
+	public void syncSubticks_bes(int subticksTarget) {
+		if (BlockEventCounters.subticksTarget > 0) {
+			// If the client is running a tad bit behind, save
+			// the value for when it starts the next tick.
+			nextSubticksTarget_bes = subticksTarget;
+		} else {
+			BlockEventCounters.subticksTarget = subticksTarget;
 		}
 	}
 }

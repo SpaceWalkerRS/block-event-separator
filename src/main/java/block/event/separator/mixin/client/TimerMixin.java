@@ -32,8 +32,8 @@ public class TimerMixin implements ITimer {
 	public void adjustPartialTick_bes() {
 		savedPartialTick_bes = partialTick;
 
-		float subTicks = BlockEventCounters.subTicks;
-		float range = BlockEventCounters.subTicksTarget + 1;
+		float subTicks = BlockEventCounters.subticks;
+		float range = BlockEventCounters.subticksTarget + 1;
 
 		partialTick = (subTicks + partialTick) / range;
 	}

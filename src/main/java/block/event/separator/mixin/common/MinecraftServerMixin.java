@@ -8,14 +8,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparator;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 import block.event.separator.utils.MathUtils;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.ServerConnectionListener;
@@ -35,7 +40,8 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	private int prevMaxOffset_bes;
 	private int maxOffset_bes;
 
-	private int subTicks_bes;
+	private int subticks_bes;
+	private int subticksTarget_bes;
 
 	/** The greatest block event depth across all levels in the past tick. */
 	private int maxBlockEventDepth_bes;
@@ -53,7 +59,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		)
 	)
 	private void cancelTick(BooleanSupplier isAheadOfTime, CallbackInfo ci) {
-		if (subTicks_bes > 0) {
+		if (subticks_bes > 0) {
 			// G4mespeed relies on time sync packets
 			// to sync the client to the server.
 			if (tickCount % 20 == 0) {
@@ -77,7 +83,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 			return;
 		}
 
-		if (subTicks_bes == 0) {
+		if (subticks_bes == 0) {
 			prevPrevMaxOffset_bes = prevMaxOffset_bes;
 			prevMaxOffset_bes = maxOffset_bes;
 			maxOffset_bes = switch (BlockEventSeparator.mode) {
@@ -86,18 +92,22 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 				default    -> 0;
 			};
 
-			BlockEventCounters.sMaxOffset = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+			subticksTarget_bes = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 
 			// Reset the block event counters to the lowest
 			// value for which there is no separation.
 			maxBlockEventDepth_bes = 0; // depth is zero-indexed
 			maxBlockEventTotal_bes = 1; // total is not
+
+			if (subticksTarget_bes > 0) {
+				doSubticksSync_bes();
+			}
 		}
 
 		sendBlockEvents_bes();
 
-		if (++subTicks_bes > BlockEventCounters.sMaxOffset) {
-			subTicks_bes = 0;
+		if (++subticks_bes > subticksTarget_bes) {
+			subticks_bes = 0;
 		}
 	}
 
@@ -122,8 +132,22 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		}
 	}
 
+	private void doSubticksSync_bes() {
+		String namespace = BlockEventSeparator.MOD_ID;
+		String path = "subticks";
+		ResourceLocation id = new ResourceLocation(namespace, path);
+
+		ByteBuf buf = Unpooled.buffer();
+		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
+
+		buffer.writeInt(subticksTarget_bes);
+
+		Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
+		playerList.broadcastAll(packet);
+	}
+
 	private void sendBlockEvents_bes() {
-		int maxOffset = subTicks_bes;
+		int maxOffset = subticks_bes;
 
 		for (ServerLevel level : getAllLevels()) {
 			((IServerLevel)level).sendBlockEvents_bes(maxOffset);
