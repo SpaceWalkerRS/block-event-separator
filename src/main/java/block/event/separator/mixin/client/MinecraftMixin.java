@@ -31,8 +31,9 @@ public class MinecraftMixin implements IMinecraft {
 		locals = LocalCapture.CAPTURE_FAILHARD,
 		at = @At(
 			value = "INVOKE_STRING",
+			ordinal = 0,
 			target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V",
-			args = "ldc=tick"
+			args = "ldc=scheduledExecutables"
 		)
 	)
 	private void preTick(boolean isRunning, CallbackInfo ci, long time, int ticksThisFrame) {

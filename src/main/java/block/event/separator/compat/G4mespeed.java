@@ -4,14 +4,20 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import net.fabricmc.loader.api.FabricLoader;
+
 public class G4mespeed {
 
-	private static final int BLOCKS_PER_CHUNK = 16;
+	private static final String MOD_ID = "g4mespeed";
 
 	private static Object blockEventDistance_object;
 	private static Method getValue_method;
 
 	public static void init() {
+		if (!FabricLoader.getInstance().isModLoaded(MOD_ID)) {
+			return;
+		}
+
 		try {
 			Class<?> GSServerController = Class.forName("com.g4mesoft.core.server.GSServerController");
 			Class<?> GSTpsModule = Class.forName("com.g4mesoft.module.tps.GSTpsModule");
@@ -38,7 +44,7 @@ public class G4mespeed {
 		if (getValue_method != null) {
 			try {
 				int chunkDistance = (int)getValue_method.invoke(blockEventDistance_object);
-				return chunkDistance * BLOCKS_PER_CHUNK;
+				return chunkDistance * 16;
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 
 			}
