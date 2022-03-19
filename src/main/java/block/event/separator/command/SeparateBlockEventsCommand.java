@@ -83,7 +83,7 @@ public class SeparateBlockEventsCommand {
 			text = new TextComponent("Disabled block event separation");
 		} else {
 			text = new TextComponent("").
-				append("Enabled block event separation is in [").
+				append("Enabled block event separation in [").
 				append(new TextComponent(mode.name).withStyle(style -> style.
 					applyFormat(ChatFormatting.GREEN).
 					withHoverEvent(new HoverEvent(

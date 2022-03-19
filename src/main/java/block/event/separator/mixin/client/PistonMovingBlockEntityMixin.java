@@ -5,6 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -17,10 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-@Mixin(
-	value = PistonMovingBlockEntity.class,
-	priority = 999
-)
+@Mixin(PistonMovingBlockEntity.class)
 public class PistonMovingBlockEntityMixin extends BlockEntity {
 
 	@Shadow @Final private static int TICKS_TO_EXTEND;
@@ -41,8 +39,8 @@ public class PistonMovingBlockEntityMixin extends BlockEntity {
 		)
 	)
 	private void onInit(BlockPos pos, BlockState state, CallbackInfo ci) {
-		float offset = BlockEventCounters.currentOffset;
-		float range = BlockEventCounters.maxOffset + 1;
+		float offset = BlockEventCounters.subticks;
+		float range = BlockEventCounters.subticksTarget + 1;
 
 		if (offset > 0 && range > 0) {
 			startProgress_bes = offset / (range * TICKS_TO_EXTEND);
@@ -53,7 +51,8 @@ public class PistonMovingBlockEntityMixin extends BlockEntity {
 		method = "getProgress",
 		cancellable = true,
 		at = @At(
-			value = "HEAD"
+			value = "HEAD",
+			shift = Shift.AFTER
 		)
 	)
 	private void adjustProgress(float partialTick, CallbackInfoReturnable<Float> cir) {
@@ -71,7 +70,7 @@ public class PistonMovingBlockEntityMixin extends BlockEntity {
 		}
 	}
 
-	private float adjustProgress_bes(float progress) {
+	public float adjustProgress_bes(float progress) {
 		return progress < startProgress_bes ? 0.0F : (progress - startProgress_bes) / (1.0F - startProgress_bes);
 	}
 }

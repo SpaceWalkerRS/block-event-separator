@@ -8,13 +8,14 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.BlockEvent;
-import block.event.separator.interfaces.mixin.IClientboundBlockEventPacket;
+import block.event.separator.BlockEventSeparator;
 import block.event.separator.interfaces.mixin.IMinecraft;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
+import net.minecraft.resources.ResourceLocation;
 
 @Mixin(ClientPacketListener.class)
 public class ClientPacketListenerMixin {
@@ -22,18 +23,35 @@ public class ClientPacketListenerMixin {
 	@Shadow @Final private Minecraft minecraft;
 
 	@Inject(
-		method = "handleBlockEvent",
+		method = "handleCustomPayload",
 		cancellable = true,
 		at = @At(
 			value = "INVOKE",
 			shift = Shift.BEFORE,
-			target = "Lnet/minecraft/client/multiplayer/ClientLevel;blockEvent(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;II)V"
+			ordinal = 0,
+			target = "Lnet/minecraft/network/protocol/game/ClientboundCustomPayloadPacket;getIdentifier()Lnet/minecraft/resources/ResourceLocation;"
 		)
 	)
-	private void onBlockEvent(ClientboundBlockEventPacket packet, CallbackInfo ci) {
-		BlockEvent blockEvent = ((IClientboundBlockEventPacket)packet).getBlockEvent_bes();
-		((IMinecraft)minecraft).queueBlockEvent_bes(blockEvent);
+	private void handleCustomPayload(ClientboundCustomPayloadPacket packet, CallbackInfo ci) {
+		ResourceLocation id = packet.getIdentifier();
+		String namespace = id.getNamespace();
+		String path = id.getPath();
 
-		ci.cancel();
+		if (BlockEventSeparator.MOD_ID.equals(namespace)) {
+			FriendlyByteBuf buffer = packet.getData();
+
+			switch (path) {
+			case "subticks":
+				int subticksTarget = buffer.readInt();
+				((IMinecraft)minecraft).syncSubticks_bes(subticksTarget);
+				
+				break;
+			default:
+				BlockEventSeparator.LOGGER.info("Ignoring packet with unknown id \'" + path + "\'");
+				return;
+			}
+
+			ci.cancel();
+		}
 	}
 }
