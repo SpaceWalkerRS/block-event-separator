@@ -48,7 +48,7 @@ public class SeparateBlockEventsCommand {
 	}
 
 	private static int query(CommandSourceStack source) {
-		Mode mode = BlockEventSeparator.mode;
+		Mode mode = BlockEventSeparator.getMode();
 		Component text;
 
 		if (mode == Mode.OFF) {
@@ -76,7 +76,7 @@ public class SeparateBlockEventsCommand {
 			throw ERROR_INVALID_NAME.create();
 		}
 
-		BlockEventSeparator.mode = mode;
+		BlockEventSeparator.setMode(mode);
 		Component text;
 
 		if (mode == Mode.OFF) {

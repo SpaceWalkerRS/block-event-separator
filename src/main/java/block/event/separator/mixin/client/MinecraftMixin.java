@@ -16,7 +16,8 @@ import net.minecraft.client.Timer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 
-@Mixin(Minecraft.class)
+/* make sure to cancel tick after g4mespeed ticks controllers */
+@Mixin(value = Minecraft.class, priority = 1001)
 public class MinecraftMixin implements IMinecraft {
 
 	@Shadow private Timer timer;
