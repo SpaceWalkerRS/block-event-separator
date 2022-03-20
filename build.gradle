@@ -3,6 +3,12 @@ plugins {
 	id 'maven-publish'
 }
 
+repositories {
+    flatDir {
+        dirs "./vendor/g4mespeed"
+    }
+}
+
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -17,6 +23,9 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Implementation of the G4mespeed extension
+	modImplementation ":g4mespeed:1.3.0:mc${project.minecraft_version}"
 }
 
 processResources {

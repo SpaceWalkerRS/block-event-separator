@@ -4,6 +4,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -70,7 +71,8 @@ public class MinecraftMixin implements IMinecraft {
 		method = "tick",
 		cancellable = true,
 		at = @At(
-			value = "HEAD"
+			value = "HEAD",
+			shift = Shift.AFTER
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {

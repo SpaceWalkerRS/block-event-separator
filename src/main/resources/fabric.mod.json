@@ -18,8 +18,8 @@
 
 	"environment": "*",
 	"entrypoints": {
-		"main": [
-			"block.event.separator.BlockEventSeparator"
+		"g4mespeed": [
+			"block.event.separator.g4mespeed.BlockEventSeparatorExtension"
 		]
 	},
 	"mixins": [
@@ -30,7 +30,7 @@
 		"minecraft": "1.18.x"
 	},
 	"breaks": {
-		"g4mespeed": "<=1.2.5"
+		"g4mespeed": "<1.3.0"
 	},
 
 	"custom": {

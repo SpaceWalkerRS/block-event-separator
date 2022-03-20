@@ -1,41 +1,62 @@
 package block.event.separator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import block.event.separator.compat.G4mespeed;
-import net.fabricmc.api.ModInitializer;
+import com.google.common.base.Suppliers;
 
-public class BlockEventSeparator implements ModInitializer {
+public class BlockEventSeparator {
 
 	public static final String MOD_ID = "block-event-separator";
 	public static final String MOD_NAME = "Block Event Separator";
 	public static final String MOD_VERSION = "1.0.0";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-	public static Mode mode = Mode.OFF;
+	/* Supplier for block event broadcast chunk distance */
+	public static Supplier<Integer> blockEventDistanceSupplier = Suppliers.ofInstance(4);
 
-	@Override
-	public void onInitialize() {
-		G4mespeed.init();
+	private static Mode mode = Mode.OFF;
+	private static final List<Runnable> modeListeners = new ArrayList<>();
+	
+	public static Mode getMode() {
+		return mode;
 	}
 
+	public static void setMode(Mode newMode) {
+		if (newMode != null && newMode != mode) {
+			mode = newMode;
+			modeListeners.forEach(Runnable::run);
+		}
+	}
+	
+	public static void addModeChangeListener(Runnable listener) {
+		modeListeners.add(listener);
+	}
+	
 	public static enum Mode {
 
 		OFF(0, "off", ""),
 		DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time."),
 		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time.");
 
+		private static final Mode[] ALL;
 		private static final Map<String, Mode> BY_NAME;
-
+		
 		static {
-
+			
+			Mode[] modes = values();
+			
+			ALL = new Mode[modes.length];
 			BY_NAME = new HashMap<>();
 
-			for (Mode mode : values()) {
+			for (Mode mode : modes) {
+				ALL[mode.index] = mode;
 				BY_NAME.put(mode.name, mode);
 			}
 		}
@@ -52,6 +73,18 @@ public class BlockEventSeparator implements ModInitializer {
 
 		public static Mode fromName(String name) {
 			return BY_NAME.get(name);
+		}
+
+		public static Mode fromIndex(int index) {
+			if (index >= 0 && index < ALL.length) {
+				return ALL[index];
+			}
+			
+			return null;
+		}
+		
+		public static int getCount() {
+			return ALL.length;
 		}
 	}
 }

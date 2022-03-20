@@ -14,12 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventSeparator;
-import block.event.separator.compat.G4mespeed;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
-
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
@@ -106,7 +103,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 			currentDepth_bes = Math.max(currentDepth_bes, gcp_microtick);
 			total_bes++;
 
-			int offset = switch (BlockEventSeparator.mode) {
+			int offset = switch (BlockEventSeparator.getMode()) {
 				case DEPTH -> currentDepth_bes;
 				case INDEX -> total_bes - 1;
 				default    -> 0;
@@ -146,6 +143,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	}
 
 	private float getBlockEventRange_bes() {
-		return G4mespeed.getBlockEventDistance(64.0F);
+		// Convert chunk distance to block distance
+		return 16.0f * BlockEventSeparator.blockEventDistanceSupplier.get();
 	}
 }
