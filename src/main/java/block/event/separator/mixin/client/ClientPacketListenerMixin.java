@@ -41,13 +41,14 @@ public class ClientPacketListenerMixin {
 			FriendlyByteBuf buffer = packet.getData();
 
 			switch (path) {
-			case "subticks":
-				int subticksTarget = buffer.readInt();
-				((IMinecraft)minecraft).syncSubticks_bes(subticksTarget);
+			case "max_offset":
+				int maxOffset = buffer.readInt();
+				((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset);
 				
 				break;
 			default:
 				BlockEventSeparator.LOGGER.info("Ignoring packet with unknown id \'" + path + "\'");
+
 				return;
 			}
 
