@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import block.event.separator.BlockEventCounters;
 import block.event.separator.interfaces.mixin.IMinecraft;
 import block.event.separator.interfaces.mixin.ITimer;
+import block.event.separator.utils.MathUtils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Timer;
@@ -25,7 +26,14 @@ public class MinecraftMixin implements IMinecraft {
 	@Shadow private ClientLevel level;
 	@Shadow private boolean pause;
 
-	private int nextSubticksTarget_bes;
+	// These are the maximum animation offsets of the past few ticks.
+	private int prevPrevMaxOffset_bes;
+	private int prevMaxOffset_bes;
+	private int maxOffset_bes;
+	// This field is used when the client receives an update from the
+	// server before it is done with all the subticks of the previous
+	// ticks.
+	private int nextMaxOffset_bes;
 
 	@Inject(
 		method = "runTick",
@@ -42,9 +50,17 @@ public class MinecraftMixin implements IMinecraft {
 			BlockEventCounters.subticks += ticksThisFrame;
 
 			if (BlockEventCounters.subticks > BlockEventCounters.subticksTarget) {
+				int nextMaxOffset = nextMaxOffset_bes;
+
+				prevPrevMaxOffset_bes = prevMaxOffset_bes;
+				prevMaxOffset_bes = maxOffset_bes;
+				maxOffset_bes = 0;
+				nextMaxOffset_bes = 0;
+
 				BlockEventCounters.subticks = 0;
-				BlockEventCounters.subticksTarget = nextSubticksTarget_bes;
-				nextSubticksTarget_bes = 0;
+				BlockEventCounters.subticksTarget = 0;
+
+				updateMaxOffset_bes(nextMaxOffset);
 			}
 		}
 
@@ -72,13 +88,15 @@ public class MinecraftMixin implements IMinecraft {
 	}
 
 	@Override
-	public void syncSubticks_bes(int subticksTarget) {
-		if (BlockEventCounters.subticksTarget > 0) {
+	public void updateMaxOffset_bes(int maxOffset) {
+		if (maxOffset_bes > 0) {
 			// If the client is running a tad bit behind, save
 			// the value for when it starts the next tick.
-			nextSubticksTarget_bes = subticksTarget;
+			nextMaxOffset_bes = maxOffset;
 		} else {
-			BlockEventCounters.subticksTarget = subticksTarget;
+			maxOffset_bes = maxOffset;
 		}
+
+		BlockEventCounters.subticksTarget = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 	}
 }
