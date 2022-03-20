@@ -4,6 +4,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -16,8 +17,7 @@ import net.minecraft.client.Timer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 
-/* make sure to cancel tick after g4mespeed ticks controllers */
-@Mixin(value = Minecraft.class, priority = 1001)
+@Mixin(Minecraft.class)
 public class MinecraftMixin implements IMinecraft {
 
 	@Shadow private Timer timer;
@@ -55,7 +55,8 @@ public class MinecraftMixin implements IMinecraft {
 		method = "tick",
 		cancellable = true,
 		at = @At(
-			value = "HEAD"
+			value = "HEAD",
+			shift = Shift.AFTER
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {
