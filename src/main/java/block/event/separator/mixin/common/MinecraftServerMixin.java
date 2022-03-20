@@ -92,16 +92,16 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 				default    -> 0;
 			};
 
-			subticksTarget_bes = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+			if (maxOffset_bes > 0) {
+				doMaxOffsetSync_bes();
+			}
 
 			// Reset the block event counters to the lowest
 			// value for which there is no separation.
 			maxBlockEventDepth_bes = 0; // depth is zero-indexed
 			maxBlockEventTotal_bes = 1; // total is not
 
-			if (subticksTarget_bes > 0) {
-				doSubticksSync_bes();
-			}
+			subticksTarget_bes = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 		}
 
 		sendBlockEvents_bes();
@@ -132,15 +132,15 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		}
 	}
 
-	private void doSubticksSync_bes() {
+	private void doMaxOffsetSync_bes() {
 		String namespace = BlockEventSeparator.MOD_ID;
-		String path = "subticks";
+		String path = "max_offset";
 		ResourceLocation id = new ResourceLocation(namespace, path);
 
 		ByteBuf buf = Unpooled.buffer();
 		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
 
-		buffer.writeInt(subticksTarget_bes);
+		buffer.writeInt(maxOffset_bes);
 
 		Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
 		playerList.broadcastAll(packet);
