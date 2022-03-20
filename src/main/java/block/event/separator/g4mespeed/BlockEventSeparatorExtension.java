@@ -22,7 +22,7 @@ public class BlockEventSeparatorExtension implements GSIExtension {
 	
 	public static final GSExtensionInfo INFO = new GSExtensionInfo(NAME, UID, VERSION);
 	
-	private static final String TRANSLATION_PATH = "/assets/blockeventseparator/lang/en.lang";
+	private static final String TRANSLATION_PATH = "/assets/block/event/separator/lang/en.lang";
 	
 	@Environment(EnvType.CLIENT)
 	private BlockEventSeparatorModule clientModule;
