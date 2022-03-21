@@ -16,8 +16,9 @@ import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventSeparator;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
+
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import net.minecraft.core.Holder;
+
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.resources.ResourceKey;
@@ -43,8 +44,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 	private int gcp_microtick; // field from G4mespeed Capture & Playback
 
-	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
-		super(data, dimension, holder, supplier, isClient, isDebug, seed);
+	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, DimensionType dimensionType, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
+		super(data, dimension, dimensionType, supplier, isClient, isDebug, seed);
 	}
 
 	@Inject(
@@ -135,15 +136,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		int x = be.pos.getX();
 		int y = be.pos.getY();
 		int z = be.pos.getZ();
-		float range = getBlockEventRange_bes();
+		float range = 64.0F;
 		ResourceKey<Level> dimension = dimension();
 
 		Packet<?> packet = new ClientboundBlockEventPacket(be.pos, be.block, be.type, be.data);
 		server.getPlayerList().broadcast(null, x, y, z, range, dimension, packet);
-	}
-
-	private float getBlockEventRange_bes() {
-		// Convert chunk distance to block distance
-		return 16.0f * BlockEventSeparator.blockEventDistanceSupplier.get();
 	}
 }

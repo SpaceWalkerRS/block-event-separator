@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Suppliers;
 
 public class BlockEventSeparator {
 
@@ -17,9 +14,6 @@ public class BlockEventSeparator {
 	public static final String MOD_NAME = "Block Event Separator";
 	public static final String MOD_VERSION = "1.0.0";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
-
-	/* Supplier for block event broadcast chunk distance */
-	public static Supplier<Integer> blockEventDistanceSupplier = Suppliers.ofInstance(4);
 
 	private static Mode mode = Mode.OFF;
 	private static final List<Runnable> modeListeners = new ArrayList<>();
@@ -45,18 +39,13 @@ public class BlockEventSeparator {
 		DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time."),
 		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time.");
 
-		private static final Mode[] ALL;
 		private static final Map<String, Mode> BY_NAME;
 		
 		static {
-			
-			Mode[] modes = values();
-			
-			ALL = new Mode[modes.length];
+
 			BY_NAME = new HashMap<>();
 
-			for (Mode mode : modes) {
-				ALL[mode.index] = mode;
+			for (Mode mode : values()) {
 				BY_NAME.put(mode.name, mode);
 			}
 		}
@@ -73,18 +62,6 @@ public class BlockEventSeparator {
 
 		public static Mode fromName(String name) {
 			return BY_NAME.get(name);
-		}
-
-		public static Mode fromIndex(int index) {
-			if (index >= 0 && index < ALL.length) {
-				return ALL[index];
-			}
-			
-			return null;
-		}
-		
-		public static int getCount() {
-			return ALL.length;
 		}
 	}
 }
