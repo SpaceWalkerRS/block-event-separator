@@ -18,8 +18,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-@Mixin(PistonMovingBlockEntity.class)
-public class PistonMovingBlockEntityMixin extends BlockEntity {
+@Mixin(
+	value = PistonMovingBlockEntity.class,
+	priority = 999
+)
+public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 
 	@Shadow @Final private static int TICKS_TO_EXTEND;
 
@@ -27,10 +30,13 @@ public class PistonMovingBlockEntityMixin extends BlockEntity {
 
 	/** The progress at which this block entity starts animating. */
 	private float startProgress_bes;
+	private boolean skipProgressAdjustment_bes;
 
 	private PistonMovingBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
+
+	@Shadow protected abstract float getProgress(float partialTick);
 
 	@Inject(
 		method = "<init>(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V",
@@ -51,26 +57,50 @@ public class PistonMovingBlockEntityMixin extends BlockEntity {
 		method = "getProgress",
 		cancellable = true,
 		at = @At(
+			value = "HEAD"
+		)
+	)
+	private void adjustProgress(float partialTick, CallbackInfoReturnable<Float> cir) {
+		if (level.isClientSide() && !skipProgressAdjustment_bes) {
+			float progress;
+
+			try {
+				skipProgressAdjustment_bes = true;
+				progress = getProgress(partialTick);
+			} finally {
+				skipProgressAdjustment_bes = false;
+			}
+
+			if (startProgress_bes > 0.0F) {
+				progress = adjustProgress_bes(progress);
+			}
+
+			cir.setReturnValue(progress);
+		}
+	}
+
+	@Inject(
+		method = "getProgress",
+		cancellable = true,
+		at = @At(
 			value = "HEAD",
 			shift = Shift.AFTER
 		)
 	)
-	private void adjustProgress(float partialTick, CallbackInfoReturnable<Float> cir) {
+	private void getProgressNoG4mespeed(float partialTick, CallbackInfoReturnable<Float> cir) {
 		if (level.isClientSide()) {
 			// For block event separation to work, pistons have to start animating
 			// right away, rather than after the first tick, like in Vanilla.
+			// G4mespeed already makes this change, but if that mod is not intalled,
+			// we have to make this change ourselves.
 			float p = progress + (partialTick / TICKS_TO_EXTEND);
 			p = Mth.clamp(p, 0.0F, 1.0F);
-
-			if (startProgress_bes > 0.0F) {
-				p = adjustProgress_bes(p);
-			}
 
 			cir.setReturnValue(p);
 		}
 	}
 
-	public float adjustProgress_bes(float progress) {
+	private float adjustProgress_bes(float progress) {
 		return progress < startProgress_bes ? 0.0F : (progress - startProgress_bes) / (1.0F - startProgress_bes);
 	}
 }
