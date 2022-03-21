@@ -86,11 +86,16 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		if (subticks_bes == 0) {
 			prevPrevMaxOffset_bes = prevMaxOffset_bes;
 			prevMaxOffset_bes = maxOffset_bes;
-			maxOffset_bes = switch (BlockEventSeparator.getMode()) {
-				case DEPTH -> maxBlockEventDepth_bes;
-				case INDEX -> maxBlockEventTotal_bes - 1;
-				default    -> 0;
-			};
+			switch (BlockEventSeparator.getMode()) {
+			case DEPTH:
+				maxOffset_bes = maxBlockEventDepth_bes;
+				break;
+			case INDEX:
+				maxOffset_bes = maxBlockEventTotal_bes - 1;
+				break;
+			default:
+				maxOffset_bes = 0;
+			}
 
 			// The max offset is synced every tick to make sure
 			// clients with low frame rates don't get out of whack.

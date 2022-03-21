@@ -1,6 +1,5 @@
 package block.event.separator.mixin.client;
 
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,12 +10,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEventCounters;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 
 @Mixin(
 	value = PistonMovingBlockEntity.class,
@@ -24,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 )
 public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 
-	@Shadow @Final private static int TICKS_TO_EXTEND;
+	private static final int TICKS_TO_EXTEND = 2;
 
 	@Shadow private float progress;
 
@@ -32,19 +29,19 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 	private float startProgress_bes;
 	private boolean skipProgressAdjustment_bes;
 
-	private PistonMovingBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-		super(type, pos, state);
+	public PistonMovingBlockEntityMixin(BlockEntityType<?> type) {
+		super(type);
 	}
 
 	@Shadow protected abstract float getProgress(float partialTick);
 
 	@Inject(
-		method = "<init>(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V",
+		method = "<init>()V",
 		at = @At(
 			value = "RETURN"
 		)
 	)
-	private void onInit(BlockPos pos, BlockState state, CallbackInfo ci) {
+	private void onInit(CallbackInfo ci) {
 		float offset = BlockEventCounters.subticks;
 		float range = BlockEventCounters.subticksTarget + 1;
 

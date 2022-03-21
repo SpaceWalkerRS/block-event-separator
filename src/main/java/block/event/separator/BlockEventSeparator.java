@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Suppliers;
 
@@ -16,7 +16,7 @@ public class BlockEventSeparator {
 	public static final String MOD_ID = "block-event-separator";
 	public static final String MOD_NAME = "Block Event Separator";
 	public static final String MOD_VERSION = "1.0.0";
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
+	public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
 	/* Supplier for block event broadcast chunk distance */
 	public static Supplier<Integer> blockEventDistanceSupplier = Suppliers.ofInstance(4);

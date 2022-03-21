@@ -104,10 +104,16 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 			currentDepth_bes = Math.max(currentDepth_bes, gcp_microtick);
 			total_bes++;
 
-			int offset = switch (BlockEventSeparator.getMode()) {
-				case DEPTH -> currentDepth_bes;
-				case INDEX -> total_bes - 1;
-				default    -> 0;
+			int offset;
+			switch (BlockEventSeparator.getMode()) {
+			case DEPTH:
+				offset = currentDepth_bes;
+				break;
+			case INDEX:
+				offset = total_bes - 1;
+				break;
+			default:
+				offset = 0;
 			};
 
 			BlockEvent blockEvent = BlockEvent.of(data, offset);
