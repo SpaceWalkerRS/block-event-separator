@@ -16,7 +16,9 @@ import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventSeparator;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
+
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
