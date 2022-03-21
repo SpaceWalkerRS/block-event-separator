@@ -10,12 +10,13 @@ import com.g4mesoft.packet.GSIPacket;
 import com.g4mesoft.registry.GSSupplierRegistry;
 
 import block.event.separator.BlockEventSeparator;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 public class BlockEventSeparatorExtension implements GSIExtension {
 
-	public static final String NAME = "Block Event Separator";
+	public static final String NAME = BlockEventSeparator.MOD_NAME;
 	/* "BESM" in ASCII as HEX */
 	public static final GSExtensionUID UID = new GSExtensionUID(0x4245534D);
 	public static final GSVersion VERSION = decodeVersionString(BlockEventSeparator.MOD_VERSION);

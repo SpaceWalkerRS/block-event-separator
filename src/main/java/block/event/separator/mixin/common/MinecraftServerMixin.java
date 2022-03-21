@@ -63,7 +63,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 			// G4mespeed relies on time sync packets
 			// to sync the client to the server.
 			if (tickCount % 20 == 0) {
-				doTimeSync_bes();
+				syncTime_bes();
 			}
 			// keep packet handling going
 			getConnection().tick();
@@ -92,9 +92,9 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 				default    -> 0;
 			};
 
-			if (maxOffset_bes > 0) {
-				doMaxOffsetSync_bes();
-			}
+			// The max offset is synced every tick to make sure
+			// clients with low frame rates don't get out of whack.
+			syncMaxOffset_bes();
 
 			// Reset the block event counters to the lowest
 			// value for which there is no separation.
@@ -104,7 +104,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 			subticksTarget_bes = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 		}
 
-		sendBlockEvents_bes();
+		syncBlockEvents_bes();
 
 		if (++subticks_bes > subticksTarget_bes) {
 			subticks_bes = 0;
@@ -117,7 +117,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, total);
 	}
 
-	private void doTimeSync_bes() {
+	private void syncTime_bes() {
 		for (ServerLevel level : getAllLevels()) {
 			profiler.push("timeSync");
 
@@ -132,7 +132,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		}
 	}
 
-	private void doMaxOffsetSync_bes() {
+	private void syncMaxOffset_bes() {
 		String namespace = BlockEventSeparator.MOD_ID;
 		String path = "max_offset";
 		ResourceLocation id = new ResourceLocation(namespace, path);
@@ -146,7 +146,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		playerList.broadcastAll(packet);
 	}
 
-	private void sendBlockEvents_bes() {
+	private void syncBlockEvents_bes() {
 		int maxOffset = subticks_bes;
 
 		for (ServerLevel level : getAllLevels()) {

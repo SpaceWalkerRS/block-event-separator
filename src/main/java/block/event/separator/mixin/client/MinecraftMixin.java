@@ -30,17 +30,17 @@ public class MinecraftMixin implements IMinecraft {
 	private int prevPrevMaxOffset_bes;
 	private int prevMaxOffset_bes;
 	private int maxOffset_bes;
-	// This field is used when the client receives an update from the
-	// server before it is done with all the subticks of the previous
-	// ticks.
-	private int nextMaxOffset_bes;
+
+	private boolean estimateNextTarget_bes;
+
+	private int nextSubticksTarget_bes;
+	private int queuedTicks_bes;
 
 	@Inject(
 		method = "runTick",
 		locals = LocalCapture.CAPTURE_FAILHARD,
 		at = @At(
 			value = "INVOKE_STRING",
-			ordinal = 0,
 			target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V",
 			args = "ldc=scheduledExecutables"
 		)
@@ -49,21 +49,35 @@ public class MinecraftMixin implements IMinecraft {
 		if (!pause) {
 			BlockEventCounters.subticks += ticksThisFrame;
 
-			if (BlockEventCounters.subticks > BlockEventCounters.subticksTarget) {
-				int nextMaxOffset = nextMaxOffset_bes;
+			while (BlockEventCounters.subticks > BlockEventCounters.subticksTarget) {
+				// If the client is ahead of the server, animation could speed up
+				// for several frames before being corrected. To prevent some
+				// instances of this, the next subticks target is estimated upon
+				// a new client tick.
+				if (estimateNextTarget_bes) {
+					nextSubticksTarget_bes = Math.max(prevMaxOffset_bes, maxOffset_bes);
+				}
 
-				prevPrevMaxOffset_bes = prevMaxOffset_bes;
-				prevMaxOffset_bes = maxOffset_bes;
-				maxOffset_bes = 0;
-				nextMaxOffset_bes = 0;
+				estimateNextTarget_bes = true;
 
-				BlockEventCounters.subticks = 0;
-				BlockEventCounters.subticksTarget = 0;
+				BlockEventCounters.subticks -= (1 + BlockEventCounters.subticksTarget);
+				BlockEventCounters.subticksTarget = nextSubticksTarget_bes;
+				nextSubticksTarget_bes = -1;
 
-				updateMaxOffset_bes(nextMaxOffset);
+				queuedTicks_bes++;
 			}
 		}
+	}
 
+	@Inject(
+		method = "runTick",
+		at = @At(
+			value = "INVOKE_STRING",
+			target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V",
+			args = "ldc=tick"
+		)
+	)
+	private void adjustPartialTick(boolean isRunning, CallbackInfo ci) {
 		((ITimer)timer).adjustPartialTick_bes();
 	}
 
@@ -76,9 +90,9 @@ public class MinecraftMixin implements IMinecraft {
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {
-		// Only allow client ticks to happen
-		// in the first subtick, skip the rest.
-		if (BlockEventCounters.subticks > 0) {
+		if (queuedTicks_bes > 0) {
+			queuedTicks_bes--;
+		} else {
 			// keep packet handling going
 			if (!pause && level != null) {
 				gameMode.tick();
@@ -90,14 +104,21 @@ public class MinecraftMixin implements IMinecraft {
 
 	@Override
 	public void updateMaxOffset_bes(int maxOffset) {
-		if (maxOffset_bes > 0) {
-			// If the client is running a tad bit behind, save
-			// the value for when it starts the next tick.
-			nextMaxOffset_bes = maxOffset;
-		} else {
-			maxOffset_bes = maxOffset;
-		}
+		prevPrevMaxOffset_bes = prevMaxOffset_bes;
+		prevMaxOffset_bes = maxOffset_bes;
+		maxOffset_bes = maxOffset;
 
-		BlockEventCounters.subticksTarget = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+		int subticksTarget = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+
+		if (nextSubticksTarget_bes < 0) {
+			BlockEventCounters.subticksTarget = subticksTarget;
+			nextSubticksTarget_bes = 0;
+		} else {
+			estimateNextTarget_bes = false;
+
+			// Make sure any queued subticks do not go lost...
+			BlockEventCounters.subticksTarget += nextSubticksTarget_bes;
+			nextSubticksTarget_bes = subticksTarget;
+		}
 	}
 }
