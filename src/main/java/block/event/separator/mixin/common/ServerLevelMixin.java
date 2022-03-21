@@ -19,7 +19,6 @@ import block.event.separator.interfaces.mixin.IServerLevel;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
-import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.resources.ResourceKey;
@@ -45,8 +44,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 	private int gcp_microtick; // field from G4mespeed Capture & Playback
 
-	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
-		super(data, dimension, holder, supplier, isClient, isDebug, seed);
+	protected ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, DimensionType dimensionType, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
+		super(data, dimension, dimensionType, supplier, isClient, isDebug, seed);
 	}
 
 	@Inject(

@@ -21,6 +21,6 @@ public class BlockEvent {
 	}
 
 	public static BlockEvent of(BlockEventData data, int animationOffset) {
-		return new BlockEvent(data.pos(), data.block(), data.paramA(), data.paramB(), animationOffset);
+		return new BlockEvent(data.getPos(), data.getBlock(), data.getParamA(), data.getParamB(), animationOffset);
 	}
 }
