@@ -9,8 +9,12 @@
 		"Space Walker"
 	],
 	"contributors": [
+		"G4me4u"
 	],
 	"contact": {
+		"homepage": "https://modrinth.com/mod/block-event-separator",
+		"sources": "https://github.com/SpaceWalkerRS/block-event-separator",
+		"issues": "https://github.com/SpaceWalkerRS/block-event-separator/issues"
 	},
 
 	"license": "MIT Licence",
