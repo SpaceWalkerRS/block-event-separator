@@ -72,10 +72,6 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 				progress = adjustProgress_bes(progress);
 			}
 
-			// Clamped to 0.99F because moving blocks do not render if the progress
-			// is greater than or equal to 1.0F (in 1.16.1 and below).
-			progress = Mth.clamp(progress, 0.0F, 0.99F);
-
 			cir.setReturnValue(progress);
 		}
 	}
@@ -95,6 +91,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 			// G4mespeed already makes this change, but if that mod is not intalled,
 			// we have to make this change ourselves.
 			float p = progress + (partialTick / TICKS_TO_EXTEND);
+			p = Mth.clamp(p, 0.0F, 1.0F);
 
 			cir.setReturnValue(p);
 		}
