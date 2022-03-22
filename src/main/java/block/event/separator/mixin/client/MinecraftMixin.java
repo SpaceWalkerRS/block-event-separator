@@ -14,15 +14,15 @@ import block.event.separator.utils.MathUtils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Timer;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin implements IMinecraft {
 
 	@Shadow private Timer timer;
 	@Shadow private MultiPlayerGameMode gameMode;
-	@Shadow private ClientLevel level;
+	@Shadow private MultiPlayerLevel level;
 	@Shadow private boolean pause;
 
 	// These are the maximum animation offsets of the past few ticks.
