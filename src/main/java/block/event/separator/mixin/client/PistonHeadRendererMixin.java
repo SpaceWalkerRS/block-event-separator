@@ -17,6 +17,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 @Mixin(
 	value = PistonHeadRenderer.class,
+	// Since this redirect is not required,
+	// try to make sure it is applied last.
 	priority = Integer.MAX_VALUE
 )
 public abstract class PistonHeadRendererMixin {

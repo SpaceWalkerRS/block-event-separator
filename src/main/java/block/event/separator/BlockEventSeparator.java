@@ -22,7 +22,7 @@ public class BlockEventSeparator {
 		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time.");
 
 		private static final Map<String, Mode> BY_NAME;
-		
+
 		static {
 
 			BY_NAME = new HashMap<>();
