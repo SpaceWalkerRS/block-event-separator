@@ -12,6 +12,7 @@
 		"client.ClientPacketListenerMixin",
 		"client.IntegratedServerMixin",
 		"client.MinecraftMixin",
+		"client.PistonHeadRendererMixin",
 		"client.PistonMovingBlockEntityMixin",
 		"client.TimerMixin"
 	],
