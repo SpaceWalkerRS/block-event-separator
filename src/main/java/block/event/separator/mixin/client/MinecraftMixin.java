@@ -48,6 +48,7 @@ public class MinecraftMixin implements IMinecraft {
 	private void preTick(boolean isRunning, CallbackInfo ci, long time, int ticksThisFrame) {
 		if (!pause) {
 			BlockEventCounters.subticks += ticksThisFrame;
+			queuedTicks_bes = 0;
 
 			while (BlockEventCounters.subticks > BlockEventCounters.subticksTarget) {
 				// If the client is ahead of the server, animation could speed up
