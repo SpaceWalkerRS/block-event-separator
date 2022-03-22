@@ -31,8 +31,6 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 		super(type, pos, state);
 	}
 
-	@Shadow protected abstract float getProgress(float partialTick);
-
 	@Inject(
 		method = "<init>(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V",
 		at = @At(
