@@ -55,19 +55,20 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 			// For block event separation to work, pistons have to start animating
 			// right away, rather than after the first tick, like in Vanilla.
 			float p = progress + (partialTick / TICKS_TO_EXTEND);
-			// Clamped to .99 because moving blocks do not render if the progress
-			// is equal to or greater than 1.0F.
-			p = Mth.clamp(p, 0.0F, 0.99F); 
 
 			if (startProgress_bes > 0.0F) {
 				p = adjustProgress_bes(p);
 			}
+
+			// Clamped to 0.99F because moving blocks do not render if the progress
+			// is greater than or equal to 1.0F.
+			p = Mth.clamp(p, 0.0F, 0.99F); 
 
 			cir.setReturnValue(p);
 		}
 	}
 
 	private float adjustProgress_bes(float progress) {
-		return progress < startProgress_bes ? 0.0F : (progress - startProgress_bes) / (0.99F - startProgress_bes);
+		return progress < startProgress_bes ? 0.0F : (progress - startProgress_bes) / (1.0F - startProgress_bes);
 	}
 }
