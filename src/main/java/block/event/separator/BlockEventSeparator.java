@@ -1,8 +1,6 @@
 package block.event.separator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -15,24 +13,8 @@ public class BlockEventSeparator {
 	public static final String MOD_VERSION = "1.0.0";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-	private static Mode mode = Mode.OFF;
-	private static final List<Runnable> modeListeners = new ArrayList<>();
-	
-	public static Mode getMode() {
-		return mode;
-	}
+	public static Mode mode = Mode.OFF;
 
-	public static void setMode(Mode newMode) {
-		if (newMode != null && newMode != mode) {
-			mode = newMode;
-			modeListeners.forEach(Runnable::run);
-		}
-	}
-	
-	public static void addModeChangeListener(Runnable listener) {
-		modeListeners.add(listener);
-	}
-	
 	public static enum Mode {
 
 		OFF(0, "off", ""),

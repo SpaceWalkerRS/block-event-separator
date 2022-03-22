@@ -42,8 +42,6 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	private int currentBatch_bes;
 	private int total_bes;
 
-	private int gcp_microtick; // field from G4mespeed Capture & Playback
-
 	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, DimensionType dimensionType, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
 		super(data, dimension, dimensionType, supplier, isClient, isDebug, seed);
 	}
@@ -99,12 +97,9 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void onSuccessfulBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
 		if (cir.getReturnValue()) {
-			// G4mespeed Capture & Playback can do multiple block events
-			// per cycle, in which case we have to adjust our depth value.
-			currentDepth_bes = Math.max(currentDepth_bes, gcp_microtick);
 			total_bes++;
 
-			int offset = switch (BlockEventSeparator.getMode()) {
+			int offset = switch (BlockEventSeparator.mode) {
 				case DEPTH -> currentDepth_bes;
 				case INDEX -> total_bes - 1;
 				default    -> 0;
