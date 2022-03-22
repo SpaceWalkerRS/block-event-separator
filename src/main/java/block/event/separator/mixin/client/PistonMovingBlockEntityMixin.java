@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 
-@Mixin(value = PistonMovingBlockEntity.class)
+@Mixin(PistonMovingBlockEntity.class)
 public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 
 	private static final int TICKS_TO_EXTEND = 2;
@@ -27,8 +27,6 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 	public PistonMovingBlockEntityMixin(BlockEntityType<?> type) {
 		super(type);
 	}
-
-	@Shadow protected abstract float getProgress(float partialTick);
 
 	@Inject(
 		method = "<init>()V",
