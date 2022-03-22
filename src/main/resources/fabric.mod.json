@@ -22,22 +22,13 @@
 
 	"environment": "*",
 	"entrypoints": {
-		"g4mespeed": [
-			"block.event.separator.g4mespeed.BlockEventSeparatorExtension"
-		]
 	},
 	"mixins": [
 		"block-event-separator.mixins.json"
 	],
 
 	"depends": {
-		"minecraft": "1.16.x"
-	},
-	"breaks": {
-		"g4mespeed": "<1.3.0"
-	},
-	"suggests": {
-		"g4mespeed": ">=1.3.0"
+		"minecraft": "1.15.x"
 	},
 
 	"custom": {

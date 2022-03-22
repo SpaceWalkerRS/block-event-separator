@@ -28,7 +28,7 @@ public class CommandsMixin {
 			target = "Lcom/mojang/brigadier/CommandDispatcher;findAmbiguities(Lcom/mojang/brigadier/AmbiguityConsumer;)V"
 		)
 	)
-	private void registerCommands(Commands.CommandSelection selection, CallbackInfo ci) {
+	private void registerCommands(boolean isDedicatedServer, CallbackInfo ci) {
 		SeparateBlockEventsCommand.register(dispatcher);
 	}
 }

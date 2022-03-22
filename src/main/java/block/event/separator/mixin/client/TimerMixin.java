@@ -4,7 +4,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import block.event.separator.BlockEventCounters;
 import block.event.separator.interfaces.mixin.ITimer;
@@ -24,7 +24,7 @@ public class TimerMixin implements ITimer {
 			value = "HEAD"
 		)
 	)
-	private void onAdvanceTime(long time, CallbackInfoReturnable<Integer> cir) {
+	private void onAdvanceTime(long time, CallbackInfo ci) {
 		partialTick = savedPartialTick_bes;
 	}
 

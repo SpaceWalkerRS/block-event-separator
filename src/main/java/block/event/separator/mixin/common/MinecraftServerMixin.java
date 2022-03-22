@@ -19,20 +19,16 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.ServerConnectionListener;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.level.GameRules;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 	@Shadow private int tickCount;
-	@Shadow private ProfilerFiller profiler;
 	@Shadow private PlayerList playerList;
 
 	// These are the maximum animation offsets of the past few ticks.
@@ -60,11 +56,6 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	)
 	private void cancelTick(BooleanSupplier isAheadOfTime, CallbackInfo ci) {
 		if (subticks_bes > 0) {
-			// G4mespeed relies on time sync packets
-			// to sync the client to the server.
-			if (tickCount % 20 == 0) {
-				syncTime_bes();
-			}
 			// keep packet handling going
 			getConnection().tick();
 
@@ -86,7 +77,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		if (subticks_bes == 0) {
 			prevPrevMaxOffset_bes = prevMaxOffset_bes;
 			prevMaxOffset_bes = maxOffset_bes;
-			switch (BlockEventSeparator.getMode()) {
+			switch (BlockEventSeparator.mode) {
 			case DEPTH:
 				maxOffset_bes = maxBlockEventDepth_bes;
 				break;
@@ -120,21 +111,6 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	public void postBlockEvents_bes(int maxDepth, int total) {
 		maxBlockEventDepth_bes = Math.max(maxBlockEventDepth_bes, maxDepth);
 		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, total);
-	}
-
-	private void syncTime_bes() {
-		for (ServerLevel level : getAllLevels()) {
-			profiler.push("timeSync");
-
-			long gameTime = level.getGameTime();
-			long dayTime = level.getDayTime();
-			boolean doDayLightCycle = level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT);
-
-			Packet<?> packet = new ClientboundSetTimePacket(gameTime, dayTime, doDayLightCycle);
-			playerList.broadcastAll(packet, level.dimension());
-
-			profiler.pop();
-		}
 	}
 
 	private void syncMaxOffset_bes() {

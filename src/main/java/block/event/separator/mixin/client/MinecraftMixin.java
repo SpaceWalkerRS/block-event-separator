@@ -6,7 +6,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import block.event.separator.BlockEventCounters;
 import block.event.separator.interfaces.mixin.IMinecraft;
@@ -38,16 +37,15 @@ public class MinecraftMixin implements IMinecraft {
 
 	@Inject(
 		method = "runTick",
-		locals = LocalCapture.CAPTURE_FAILHARD,
 		at = @At(
 			value = "INVOKE_STRING",
-			target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V",
+			target = "Lnet/minecraft/util/profiling/GameProfiler;push(Ljava/lang/String;)V",
 			args = "ldc=scheduledExecutables"
 		)
 	)
-	private void preTick(boolean isRunning, CallbackInfo ci, long time, int ticksThisFrame) {
+	private void preTick(boolean isRunning, CallbackInfo ci) {
 		if (!pause) {
-			BlockEventCounters.subticks += ticksThisFrame;
+			BlockEventCounters.subticks += timer.ticks;
 
 			while (BlockEventCounters.subticks > BlockEventCounters.subticksTarget) {
 				// If the client is ahead of the server, animation could speed up
@@ -73,7 +71,7 @@ public class MinecraftMixin implements IMinecraft {
 		method = "runTick",
 		at = @At(
 			value = "INVOKE_STRING",
-			target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V",
+			target = "Lnet/minecraft/util/profiling/GameProfiler;push(Ljava/lang/String;)V",
 			args = "ldc=tick"
 		)
 	)

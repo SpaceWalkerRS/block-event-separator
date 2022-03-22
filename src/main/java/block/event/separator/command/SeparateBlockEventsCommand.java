@@ -48,7 +48,7 @@ public class SeparateBlockEventsCommand {
 	}
 
 	private static int query(CommandSourceStack source) {
-		Mode mode = BlockEventSeparator.getMode();
+		Mode mode = BlockEventSeparator.mode;
 		Component text;
 
 		if (mode == Mode.OFF) {
@@ -57,8 +57,8 @@ public class SeparateBlockEventsCommand {
 			text = new TextComponent("").
 				append("Block event separation is currently running in [").
 				append(new TextComponent(mode.name).withStyle(style -> style.
-					applyFormat(ChatFormatting.GREEN).
-					withHoverEvent(new HoverEvent(
+					setColor(ChatFormatting.GREEN).
+					setHoverEvent(new HoverEvent(
 						HoverEvent.Action.SHOW_TEXT,
 						new TextComponent(mode.description))))).
 				append("] mode");
@@ -76,7 +76,7 @@ public class SeparateBlockEventsCommand {
 			throw ERROR_INVALID_NAME.create();
 		}
 
-		BlockEventSeparator.setMode(mode);
+		BlockEventSeparator.mode = mode;
 		Component text;
 
 		if (mode == Mode.OFF) {
@@ -85,8 +85,8 @@ public class SeparateBlockEventsCommand {
 			text = new TextComponent("").
 				append("Enabled block event separation in [").
 				append(new TextComponent(mode.name).withStyle(style -> style.
-					applyFormat(ChatFormatting.GREEN).
-					withHoverEvent(new HoverEvent(
+					setColor(ChatFormatting.GREEN).
+					setHoverEvent(new HoverEvent(
 						HoverEvent.Action.SHOW_TEXT,
 						new TextComponent(mode.description))))).
 				append("] mode");

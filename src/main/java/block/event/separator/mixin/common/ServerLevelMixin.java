@@ -2,7 +2,7 @@ package block.event.separator.mixin.common;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,14 +21,15 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkSource;
+import net.minecraft.world.level.dimension.Dimension;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.storage.WritableLevelData;
+import net.minecraft.world.level.storage.LevelData;
 
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelMixin extends Level implements IServerLevel {
@@ -42,10 +43,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	private int currentBatch_bes;
 	private int total_bes;
 
-	private int gcp_microtick; // field from G4mespeed Capture & Playback
-
-	protected ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, DimensionType dimensionType, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
-		super(data, dimension, dimensionType, supplier, isClient, isDebug, seed);
+	protected ServerLevelMixin(LevelData data, DimensionType dimensionType, BiFunction<Level, Dimension, ChunkSource> biFunction, ProfilerFiller profilerFiller, boolean isClient) {
+		super(data, dimensionType, biFunction, profilerFiller, isClient);
 	}
 
 	@Inject(
@@ -99,13 +98,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void onSuccessfulBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
 		if (cir.getReturnValue()) {
-			// G4mespeed Capture & Playback can do multiple block events
-			// per cycle, in which case we have to adjust our depth value.
-			currentDepth_bes = Math.max(currentDepth_bes, gcp_microtick);
 			total_bes++;
 
 			int offset;
-			switch (BlockEventSeparator.getMode()) {
+			switch (BlockEventSeparator.mode) {
 			case DEPTH:
 				offset = currentDepth_bes;
 				break;
@@ -142,15 +138,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		int x = be.pos.getX();
 		int y = be.pos.getY();
 		int z = be.pos.getZ();
-		float range = getBlockEventRange_bes();
-		ResourceKey<Level> dimension = dimension();
+		float range = 64.0F;
+		DimensionType dimensionType = dimension.getType();
 
 		Packet<?> packet = new ClientboundBlockEventPacket(be.pos, be.block, be.type, be.data);
-		server.getPlayerList().broadcast(null, x, y, z, range, dimension, packet);
-	}
-
-	private float getBlockEventRange_bes() {
-		// Convert chunk distance to block distance
-		return 16.0f * BlockEventSeparator.blockEventDistanceSupplier.get();
+		server.getPlayerList().broadcast(null, x, y, z, range, dimensionType, packet);
 	}
 }
