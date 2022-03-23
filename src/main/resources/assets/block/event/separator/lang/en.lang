@@ -9,7 +9,8 @@ hotkey.blockeventseparator.toggleSeparationMode=Toggle Separation Mode
 ############ Settings ############
 setting.blockeventseparator=Block Event Separator
 setting.blockeventseparator.separationMode=Separation Mode
-setting.blockeventseparator.separationMode.desc=Block events can either be separated by depth (colloquially known as "microticks" or "BED") or by index. The former has block events at the same depth animating simultaneously, where an increase in depth is separated by 1gt. The latter is based on the order in which events are executed, where each block event is separated by 1gt.
+setting.blockeventseparator.separationMode.desc=There are three modes of block event separation. In Depth mode, block events are separated by depth (colloquially known as "microticks" or "BED"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time. In Index mode block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time. In Block mode moving blocks are separated by index, based on the order in which they were created. They are separated by 1gt worth of time.
 setting.blockeventseparator.separationMode.0=Off
 setting.blockeventseparator.separationMode.1=Depth
 setting.blockeventseparator.separationMode.2=Index
+setting.blockeventseparator.separationMode.3=Block

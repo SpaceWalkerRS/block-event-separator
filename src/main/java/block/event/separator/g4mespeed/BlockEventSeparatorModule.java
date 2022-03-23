@@ -56,8 +56,8 @@ public class BlockEventSeparatorModule implements GSIModule {
 			});
 			
 			// Detect whenever the mode is changed via command
-			BlockEventSeparator.addModeChangeListener(() -> {
-				Mode mode = BlockEventSeparator.getMode();
+			BlockEventSeparator.addServerModeListener(() -> {
+				Mode mode = BlockEventSeparator.getServerMode();
 				if (mode.index != sSeparationMode.getValue()) {
 					sSeparationMode.setValue(mode.index);
 				}
@@ -70,9 +70,9 @@ public class BlockEventSeparatorModule implements GSIModule {
 
 	private void onSeparationModeSettingChanged() {
 		Mode mode = Mode.fromIndex(sSeparationMode.getValue());
-		if (mode != BlockEventSeparator.getMode()) {
+		if (mode != BlockEventSeparator.getServerMode()) {
 			// Ensure that we do not get change listener loop.
-			BlockEventSeparator.setMode(mode);
+			BlockEventSeparator.setServerMode(mode);
 		}
 	}
 

@@ -121,5 +121,7 @@ public class MinecraftMixin implements IMinecraft {
 			BlockEventCounters.subticksTarget += nextSubticksTarget_bes;
 			nextSubticksTarget_bes = subticksTarget;
 		}
+
+		BlockEventCounters.movingBlocks = 0;
 	}
 }

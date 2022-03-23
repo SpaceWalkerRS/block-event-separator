@@ -6,10 +6,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.At.Shift;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEventCounters;
+import block.event.separator.BlockEventSeparator;
+import block.event.separator.interfaces.mixin.IBlockEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -22,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 	value = PistonMovingBlockEntity.class,
 	priority = 999
 )
-public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
+public abstract class PistonMovingBlockEntityMixin extends BlockEntity implements IBlockEntity {
 
 	@Shadow @Final private static int TICKS_TO_EXTEND;
 
@@ -37,21 +38,6 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 	}
 
 	@Shadow protected abstract float getProgress(float partialTick);
-
-	@Inject(
-		method = "<init>(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V",
-		at = @At(
-			value = "RETURN"
-		)
-	)
-	private void onInit(BlockPos pos, BlockState state, CallbackInfo ci) {
-		float offset = BlockEventCounters.subticks;
-		float range = BlockEventCounters.subticksTarget + 1;
-
-		if (offset > 0 && range > 0) {
-			startProgress_bes = offset / (range * TICKS_TO_EXTEND);
-		}
-	}
 
 	@Inject(
 		method = "getProgress",
@@ -97,6 +83,21 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 			p = Mth.clamp(p, 0.0F, 1.0F);
 
 			cir.setReturnValue(p);
+		}
+	}
+
+	@Override
+	public void onClientLevelSet() {
+		float offset = switch (BlockEventSeparator.getClientMode()) {
+			case DEPTH -> BlockEventCounters.subticks;
+			case INDEX -> BlockEventCounters.subticks;
+			case BLOCK -> BlockEventCounters.movingBlocks++;
+			default    -> 0;
+		};
+		float range = BlockEventCounters.subticksTarget + 1;
+
+		if (offset > 0 && range > 0) {
+			startProgress_bes = offset / (range * TICKS_TO_EXTEND);
 		}
 	}
 

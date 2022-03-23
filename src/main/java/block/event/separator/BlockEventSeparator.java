@@ -21,37 +21,49 @@ public class BlockEventSeparator {
 	/* Supplier for block event broadcast chunk distance */
 	public static Supplier<Integer> blockEventDistanceSupplier = Suppliers.ofInstance(4);
 
-	private static Mode mode = Mode.OFF;
-	private static final List<Runnable> modeListeners = new ArrayList<>();
-	
-	public static Mode getMode() {
-		return mode;
+	private static Mode serverMode = Mode.OFF;
+	private static Mode clientMode = Mode.OFF;
+	private static final List<Runnable> SERVER_MODE_LISTENERS = new ArrayList<>();
+
+	public static Mode getServerMode() {
+		return serverMode;
 	}
 
-	public static void setMode(Mode newMode) {
-		if (newMode != null && newMode != mode) {
-			mode = newMode;
-			modeListeners.forEach(Runnable::run);
+	public static void setServerMode(Mode mode) {
+		if (mode != null && mode != serverMode) {
+			serverMode = mode;
+			SERVER_MODE_LISTENERS.forEach(Runnable::run);
 		}
 	}
-	
-	public static void addModeChangeListener(Runnable listener) {
-		modeListeners.add(listener);
+
+	public static void addServerModeListener(Runnable listener) {
+		SERVER_MODE_LISTENERS.add(listener);
 	}
-	
+
+	public static Mode getClientMode() {
+		return clientMode;
+	}
+
+	public static void setClientMode(Mode mode) {
+		if (mode != null && mode != clientMode) {
+			clientMode = mode;
+		}
+	}
+
 	public static enum Mode {
 
 		OFF(0, "off", ""),
 		DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time."),
-		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time.");
+		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time."),
+		BLOCK(3, "block", "Moving blocks are separated by index, based on the order in which they were created. They are separated by 1gt worth of time.");
 
 		private static final Mode[] ALL;
 		private static final Map<String, Mode> BY_NAME;
-		
+
 		static {
-			
+
 			Mode[] modes = values();
-			
+
 			ALL = new Mode[modes.length];
 			BY_NAME = new HashMap<>();
 
@@ -79,10 +91,10 @@ public class BlockEventSeparator {
 			if (index >= 0 && index < ALL.length) {
 				return ALL[index];
 			}
-			
+
 			return null;
 		}
-		
+
 		public static int getCount() {
 			return ALL.length;
 		}
