@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import block.event.separator.BlockEventSeparator;
-import block.event.separator.BlockEventSeparator.Mode;
+import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraft;
 
 import net.minecraft.client.Minecraft;
@@ -45,10 +45,10 @@ public class ClientPacketListenerMixin {
 			case "max_offset":
 				int maxOffset = buffer.readInt();
 				int modeIndex = buffer.readByte();
-				Mode mode = Mode.fromIndex(modeIndex);
+				SeparationMode mode = SeparationMode.fromIndex(modeIndex);
 
 				((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset);
-				BlockEventSeparator.setClientMode(mode);
+				BlockEventSeparator.setClientSeparationMode(mode);
 
 				break;
 			default:

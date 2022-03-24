@@ -1,9 +1,7 @@
 package block.event.separator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -18,85 +16,53 @@ public class BlockEventSeparator {
 	public static final String MOD_VERSION = "1.0.0";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
+	private static final List<Runnable> SERVER_SEPARATION_MODE_LISTENERS = new LinkedList<>();
+	private static final List<Runnable> ANIMATION_MODE_LISTENERS = new LinkedList<>();
+
 	/* Supplier for block event broadcast chunk distance */
 	public static Supplier<Integer> blockEventDistanceSupplier = Suppliers.ofInstance(4);
 
-	private static Mode serverMode = Mode.OFF;
-	private static Mode clientMode = Mode.OFF;
-	private static final List<Runnable> SERVER_MODE_LISTENERS = new ArrayList<>();
+	private static SeparationMode serverSeparationMode = SeparationMode.OFF;
+	private static SeparationMode clientSeparationMode = SeparationMode.OFF;
+	private static AnimationMode animationMode = AnimationMode.DEFAULT;
 
-	public static Mode getServerMode() {
-		return serverMode;
+	public static SeparationMode getServerMode() {
+		return serverSeparationMode;
 	}
 
-	public static void setServerMode(Mode mode) {
-		if (mode != null && mode != serverMode) {
-			serverMode = mode;
-			SERVER_MODE_LISTENERS.forEach(Runnable::run);
-		}
-	}
-
-	public static void addServerModeListener(Runnable listener) {
-		SERVER_MODE_LISTENERS.add(listener);
-	}
-
-	public static Mode getClientMode() {
-		return clientMode;
-	}
-
-	public static void setClientMode(Mode mode) {
-		if (mode != null && mode != clientMode) {
-			clientMode = mode;
+	public static void setServerSeparationMode(SeparationMode mode) {
+		if (mode != null && mode != serverSeparationMode) {
+			serverSeparationMode = mode;
+			SERVER_SEPARATION_MODE_LISTENERS.forEach(Runnable::run);
 		}
 	}
 
-	public static enum Mode {
+	public static void addServerSeparationModeListener(Runnable listener) {
+		SERVER_SEPARATION_MODE_LISTENERS.add(listener);
+	}
 
-		OFF(0, "off", ""),
-		DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time."),
-		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time."),
-		BLOCK(3, "block", "Moving blocks are separated by index, based on the order in which they were created. They are separated by 1gt worth of time.");
+	public static SeparationMode getClientSeparationMode() {
+		return clientSeparationMode;
+	}
 
-		private static final Mode[] ALL;
-		private static final Map<String, Mode> BY_NAME;
-
-		static {
-
-			Mode[] modes = values();
-
-			ALL = new Mode[modes.length];
-			BY_NAME = new HashMap<>();
-
-			for (Mode mode : modes) {
-				ALL[mode.index] = mode;
-				BY_NAME.put(mode.name, mode);
-			}
+	public static void setClientSeparationMode(SeparationMode mode) {
+		if (mode != null && mode != clientSeparationMode) {
+			clientSeparationMode = mode;
 		}
+	}
 
-		public final int index;
-		public final String name;
-		public final String description;
+	public static AnimationMode getAnimationMode() {
+		return animationMode;
+	}
 
-		private Mode(int index, String name, String description) {
-			this.index = index;
-			this.name = name;
-			this.description = description;
+	public static void setAnimationMode(AnimationMode mode) {
+		if (mode != null && mode != animationMode) {
+			animationMode = mode;
+			ANIMATION_MODE_LISTENERS.forEach(Runnable::run);
 		}
+	}
 
-		public static Mode fromName(String name) {
-			return BY_NAME.get(name);
-		}
-
-		public static Mode fromIndex(int index) {
-			if (index >= 0 && index < ALL.length) {
-				return ALL[index];
-			}
-
-			return null;
-		}
-
-		public static int getCount() {
-			return ALL.length;
-		}
+	public static void addAnimationModeListener(Runnable listener) {
+		ANIMATION_MODE_LISTENERS.add(listener);
 	}
 }

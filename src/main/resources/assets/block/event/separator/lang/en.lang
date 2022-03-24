@@ -5,6 +5,7 @@
 
 hotkey.blockeventseparator.title=Block Event Separator
 hotkey.blockeventseparator.toggleSeparationMode=Toggle Separation Mode
+hotkey.blockeventseparator.toggleAnimationMode=Toggle Animation Mode
 
 ############ Settings ############
 setting.blockeventseparator=Block Event Separator
@@ -14,3 +15,8 @@ setting.blockeventseparator.separationMode.0=Off
 setting.blockeventseparator.separationMode.1=Depth
 setting.blockeventseparator.separationMode.2=Index
 setting.blockeventseparator.separationMode.3=Block
+
+setting.blockeventseparator.animationMode=Animation Mode
+setting.blockeventseparator.animationMode.desc=The animation mode of moving blocks. By default the animations are stretched out to match the extra tick length due to the block event separation. In 'Fixed Speed' mode, however, moving blocks animate at a fixed speed no matter how much (or little) block event separation is occurring. This makes it easier to see the order of block events, at the cost of being able to tell when the blocks actually stop moving server-side.
+setting.blockeventseparator.animationMode.0=Default
+setting.blockeventseparator.animationMode.1=Fixed Speed

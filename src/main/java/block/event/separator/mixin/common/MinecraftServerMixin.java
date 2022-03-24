@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparator;
-import block.event.separator.BlockEventSeparator.Mode;
+import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 import block.event.separator.utils.MathUtils;
@@ -148,7 +148,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
 
 		int maxOffset = maxOffset_bes;
-		Mode mode = BlockEventSeparator.getServerMode();
+		SeparationMode mode = BlockEventSeparator.getServerMode();
 		int modeIndex = mode.index;
 
 		buffer.writeInt(maxOffset);

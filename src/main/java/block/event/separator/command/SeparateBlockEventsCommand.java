@@ -8,8 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
 import block.event.separator.BlockEventSeparator;
-import block.event.separator.BlockEventSeparator.Mode;
-
+import block.event.separator.SeparationMode;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -25,11 +24,11 @@ public class SeparateBlockEventsCommand {
 
 	static {
 
-		Mode[] modes = Mode.values();
+		SeparationMode[] modes = SeparationMode.values();
 		MODES = new String[modes.length];
 
 		for (int i = 0; i < modes.length; i++) {
-			Mode mode = modes[i];
+			SeparationMode mode = modes[i];
 			MODES[mode.index] = mode.name;
 		}
 	}
@@ -48,10 +47,10 @@ public class SeparateBlockEventsCommand {
 	}
 
 	private static int query(CommandSourceStack source) {
-		Mode mode = BlockEventSeparator.getServerMode();
+		SeparationMode mode = BlockEventSeparator.getServerMode();
 		Component text;
 
-		if (mode == Mode.OFF) {
+		if (mode == SeparationMode.OFF) {
 			text = new TextComponent("Block event separation is currently disabled");
 		} else {
 			text = new TextComponent("").
@@ -70,16 +69,16 @@ public class SeparateBlockEventsCommand {
 	}
 
 	private static int set(CommandSourceStack source, String name) throws CommandSyntaxException {
-		Mode mode = Mode.fromName(name);
+		SeparationMode mode = SeparationMode.fromName(name);
 
 		if (mode == null) {
 			throw ERROR_INVALID_NAME.create();
 		}
 
-		BlockEventSeparator.setServerMode(mode);
+		BlockEventSeparator.setServerSeparationMode(mode);
 		Component text;
 
-		if (mode == Mode.OFF) {
+		if (mode == SeparationMode.OFF) {
 			text = new TextComponent("Disabled block event separation");
 		} else {
 			text = new TextComponent("").

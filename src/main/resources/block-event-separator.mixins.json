@@ -11,6 +11,7 @@
 		"common.ServerLevelMixin"
 	],
 	"client": [
+		"client.ClientLevelMixin",
 		"client.ClientPacketListenerMixin",
 		"client.IntegratedServerMixin",
 		"client.MinecraftMixin",
