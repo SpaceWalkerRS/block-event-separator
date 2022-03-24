@@ -37,6 +37,9 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Shadow private ProfilerFiller profiler;
 	@Shadow private PlayerList playerList;
 
+	private SeparationMode mode_bes;
+	private int separationInterval_bes;
+
 	// These are the maximum animation offsets of the past few ticks.
 	private int prevPrevMaxOffset_bes;
 	private int prevMaxOffset_bes;
@@ -88,9 +91,12 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		}
 
 		if (subticks_bes == 0) {
+			mode_bes = BlockEventSeparator.getServerSeparationMode();
+			separationInterval_bes = BlockEventSeparator.getServerSeparationInterval();
+
 			prevPrevMaxOffset_bes = prevMaxOffset_bes;
 			prevMaxOffset_bes = maxOffset_bes;
-			maxOffset_bes = switch (BlockEventSeparator.getServerMode()) {
+			maxOffset_bes = switch (mode_bes) {
 				case DEPTH -> maxBlockEventDepth_bes;
 				case INDEX -> maxBlockEventTotal_bes - 1;
 				case BLOCK -> maxMovingBlocksTotal_bes - 1;
@@ -107,7 +113,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 			maxBlockEventTotal_bes = 1; // total is not
 			maxMovingBlocksTotal_bes = 1;
 
-			subticksTarget_bes = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+			subticksTarget_bes = separationInterval_bes * MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 		}
 
 		syncBlockEvents_bes();
@@ -141,28 +147,25 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 	private void syncMaxOffset_bes() {
 		String namespace = BlockEventSeparator.MOD_ID;
-		String path = "max_offset";
+		String path = "next_tick";
 		ResourceLocation id = new ResourceLocation(namespace, path);
 
 		ByteBuf buf = Unpooled.buffer();
 		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
 
-		int maxOffset = maxOffset_bes;
-		SeparationMode mode = BlockEventSeparator.getServerMode();
-		int modeIndex = mode.index;
-
-		buffer.writeInt(maxOffset);
-		buffer.writeByte(modeIndex);
+		buffer.writeInt(maxOffset_bes);
+		buffer.writeInt(separationInterval_bes);
+		buffer.writeByte(mode_bes.index);
 
 		Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
 		playerList.broadcastAll(packet);
 	}
 
 	private void syncBlockEvents_bes() {
-		int maxOffset = subticks_bes;
+		int offsetLimit = subticks_bes / separationInterval_bes;
 
 		for (ServerLevel level : getAllLevels()) {
-			((IServerLevel)level).sendBlockEvents_bes(maxOffset);
+			((IServerLevel)level).sendBlockEvents_bes(offsetLimit);
 		}
 	}
 }

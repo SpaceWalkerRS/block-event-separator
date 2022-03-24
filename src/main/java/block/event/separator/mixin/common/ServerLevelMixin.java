@@ -113,7 +113,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 			BlockEventCounters.currentDepth = Math.max(BlockEventCounters.currentDepth, gcp_microtick);
 			BlockEventCounters.total++;
 
-			int offset = switch (BlockEventSeparator.getServerMode()) {
+			int offset = switch (BlockEventSeparator.getServerSeparationMode()) {
 				case DEPTH -> BlockEventCounters.currentDepth;
 				case INDEX -> BlockEventCounters.total - 1;
 				case BLOCK -> BlockEventCounters.movingBlocksTotal - BlockEventCounters.movingBlocksThisEvent;
@@ -128,12 +128,12 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	}
 
 	@Override
-	public void sendBlockEvents_bes(int maxOffset) {
+	public void sendBlockEvents_bes(int offsetLimit) {
 		while (!successfulBlockEvents_bes.isEmpty()) {
 			BlockEvent blockEvent = successfulBlockEvents_bes.peek();
 			int offset = blockEvent.animationOffset;
 
-			if (offset > maxOffset) {
+			if (offset > offsetLimit) {
 				break;
 			}
 

@@ -42,12 +42,14 @@ public class ClientPacketListenerMixin {
 			FriendlyByteBuf buffer = packet.getData();
 
 			switch (path) {
-			case "max_offset":
+			case "next_tick":
 				int maxOffset = buffer.readInt();
+				int interval = buffer.readInt();
 				int modeIndex = buffer.readByte();
 				SeparationMode mode = SeparationMode.fromIndex(modeIndex);
 
-				((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset);
+				((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset, interval);
+				BlockEventSeparator.setClientSeparationInterval(interval);
 				BlockEventSeparator.setClientSeparationMode(mode);
 
 				break;

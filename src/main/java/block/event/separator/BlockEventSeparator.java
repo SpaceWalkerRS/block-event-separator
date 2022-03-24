@@ -17,6 +17,7 @@ public class BlockEventSeparator {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
 	private static final List<Runnable> SERVER_SEPARATION_MODE_LISTENERS = new LinkedList<>();
+	private static final List<Runnable> SERVER_SEPARATION_INTERVAL_LISTENERS = new LinkedList<>();
 	private static final List<Runnable> ANIMATION_MODE_LISTENERS = new LinkedList<>();
 
 	/* Supplier for block event broadcast chunk distance */
@@ -24,9 +25,11 @@ public class BlockEventSeparator {
 
 	private static SeparationMode serverSeparationMode = SeparationMode.OFF;
 	private static SeparationMode clientSeparationMode = SeparationMode.OFF;
+	private static int serverSeparationInterval = 1;
+	private static int clientSeparationInterval = 1;
 	private static AnimationMode animationMode = AnimationMode.DEFAULT;
 
-	public static SeparationMode getServerMode() {
+	public static SeparationMode getServerSeparationMode() {
 		return serverSeparationMode;
 	}
 
@@ -48,6 +51,31 @@ public class BlockEventSeparator {
 	public static void setClientSeparationMode(SeparationMode mode) {
 		if (mode != null && mode != clientSeparationMode) {
 			clientSeparationMode = mode;
+		}
+	}
+
+	public static int getServerSeparationInterval() {
+		return serverSeparationInterval;
+	}
+
+	public static void setServerSeparationInterval(int interval) {
+		if (interval != serverSeparationInterval) {
+			serverSeparationInterval = interval;
+			SERVER_SEPARATION_INTERVAL_LISTENERS.forEach(Runnable::run);
+		}
+	}
+
+	public static void addServerSeparationIntervalListener(Runnable listener) {
+		SERVER_SEPARATION_INTERVAL_LISTENERS.add(listener);
+	}
+
+	public static int getClientSeparationInterval() {
+		return clientSeparationInterval;
+	}
+
+	public static void setClientSeparationInterval(int interval) {
+		if (interval != clientSeparationInterval) {
+			clientSeparationInterval = interval;
 		}
 	}
 

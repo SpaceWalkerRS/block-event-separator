@@ -103,7 +103,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 		animationOffset_bes = switch (BlockEventSeparator.getClientSeparationMode()) {
 			case DEPTH -> BlockEventCounters.subticks;
 			case INDEX -> BlockEventCounters.subticks;
-			case BLOCK -> BlockEventCounters.movingBlocks++;
+			case BLOCK -> BlockEventCounters.movingBlocks++ * BlockEventSeparator.getClientSeparationInterval();
 			default    -> 0;
 		};
 		int range = BlockEventCounters.subticksTarget + 1;

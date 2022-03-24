@@ -121,12 +121,12 @@ public class MinecraftMixin implements IMinecraft {
 	}
 
 	@Override
-	public void updateMaxOffset_bes(int maxOffset) {
+	public void updateMaxOffset_bes(int maxOffset, int interval) {
 		prevPrevMaxOffset_bes = prevMaxOffset_bes;
 		prevMaxOffset_bes = maxOffset_bes;
 		maxOffset_bes = maxOffset;
 
-		int subticksTarget = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+		int subticksTarget = interval * MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 
 		if (nextSubticksTarget_bes < 0) {
 			BlockEventCounters.subticksTarget = subticksTarget;

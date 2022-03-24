@@ -22,10 +22,14 @@ public class BlockEventSeparatorModule implements GSIModule {
 	private static final GSSettingCategory SETTING_CATEGORY = new GSSettingCategory("blockeventseparator");
 
 	private final GSIntegerSetting sSeparationMode;
+	private final GSIntegerSetting sSeparationInterval;
+
 	private final GSIntegerSetting cAnimationMode;
 
 	public BlockEventSeparatorModule() {
 		sSeparationMode = new GSIntegerSetting("separationMode", SeparationMode.OFF.index, 0, SeparationMode.getCount() - 1);
+		sSeparationInterval = new GSIntegerSetting("separationInterval", 1, 1, 64);
+
 		cAnimationMode = new GSIntegerSetting("animationMode", AnimationMode.DEFAULT.index, 0, AnimationMode.getCount() - 1);
 	}
 
@@ -69,30 +73,51 @@ public class BlockEventSeparatorModule implements GSIModule {
 				public void onSettingChanged(GSSettingCategory category, GSSetting<?> setting) {
 					if (setting == sSeparationMode) {
 						onSeparationModeSettingChanged();
+					} else
+					if (setting == sSeparationInterval) {
+						onSeparationIntervalSettingChanged();
 					}
 				}
 			});
 
 			// Detect whenever the mode is changed via command
 			BlockEventSeparator.addServerSeparationModeListener(() -> {
-				SeparationMode mode = BlockEventSeparator.getServerMode();
+				SeparationMode mode = BlockEventSeparator.getServerSeparationMode();
 
 				if (mode.index != sSeparationMode.getValue()) {
 					sSeparationMode.setValue(mode.index);
 				}
 			});
+			// Detect whenever the interval is changed via command
+			BlockEventSeparator.addServerSeparationIntervalListener(() -> {
+				int interval = BlockEventSeparator.getServerSeparationInterval();
 
-			// Make sure we use the correct initial value
+				if (interval != sSeparationInterval.getValue()) {
+					sSeparationInterval.setValue(interval);
+				}
+			});
+
+			// Make sure we use the correct initial values
 			onSeparationModeSettingChanged();
+			onSeparationIntervalSettingChanged();
 		});
 	}
 
 	private void onSeparationModeSettingChanged() {
 		SeparationMode mode = SeparationMode.fromIndex(sSeparationMode.getValue());
 
-		if (mode != BlockEventSeparator.getServerMode()) {
+		if (mode != BlockEventSeparator.getServerSeparationMode()) {
 			// Ensure that we do not get change listener loop.
 			BlockEventSeparator.setServerSeparationMode(mode);
+		}
+	}
+
+	private void onSeparationIntervalSettingChanged() {
+		int interval = sSeparationInterval.getValue();
+
+		if (interval != BlockEventSeparator.getServerSeparationInterval()) {
+			// Ensure that we do not get change listener loop.
+			BlockEventSeparator.setServerSeparationInterval(interval);
 		}
 	}
 
@@ -130,6 +155,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 	@Override
 	public void registerServerSettings(GSSettingManager settings) {
 		settings.registerSetting(SETTING_CATEGORY, sSeparationMode);
+		settings.registerSetting(SETTING_CATEGORY, sSeparationInterval);
 	}
 
 	@Override
