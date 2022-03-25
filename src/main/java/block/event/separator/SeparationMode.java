@@ -7,7 +7,7 @@ public enum SeparationMode {
 
 	OFF(0, "off", ""),
 	DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously."),
-	INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed."),
+	INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. Each block event starts after the previous."),
 	BLOCK(3, "block", "Moving blocks are separated by index, based on the order in which they were created.");
 
 	private static final SeparationMode[] ALL;
