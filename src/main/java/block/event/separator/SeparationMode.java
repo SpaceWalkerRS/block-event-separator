@@ -6,9 +6,9 @@ import java.util.Map;
 public enum SeparationMode {
 
 	OFF(0, "off", ""),
-	DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time."),
-	INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time."),
-	BLOCK(3, "block", "Moving blocks are separated by index, based on the order in which they were created. They are separated by 1gt worth of time.");
+	DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously."),
+	INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed."),
+	BLOCK(3, "block", "Moving blocks are separated by index, based on the order in which they were created.");
 
 	private static final SeparationMode[] ALL;
 	private static final Map<String, SeparationMode> BY_NAME;
