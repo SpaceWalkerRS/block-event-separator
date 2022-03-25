@@ -4,15 +4,20 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.At.Shift;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import block.event.separator.AnimationMode;
 import block.event.separator.BlockEventCounters;
+import block.event.separator.BlockEventSeparator;
+import block.event.separator.TimerHelper;
+import block.event.separator.interfaces.mixin.IBlockEntity;
+import block.event.separator.interfaces.mixin.IPistonMovingBlockEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
@@ -22,12 +27,14 @@ import net.minecraft.world.level.block.state.BlockState;
 	value = PistonMovingBlockEntity.class,
 	priority = 999
 )
-public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
+public abstract class PistonMovingBlockEntityMixin extends BlockEntity implements IBlockEntity, IPistonMovingBlockEntity {
 
 	@Shadow @Final private static int TICKS_TO_EXTEND;
 
 	@Shadow private float progress;
+	@Shadow private float progressO;
 
+	private int animationOffset_bes;
 	/** The progress at which this block entity starts animating. */
 	private float startProgress_bes;
 	private boolean skipProgressAdjustment_bes;
@@ -36,22 +43,9 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 		super(type, pos, state);
 	}
 
-	@Shadow protected abstract float getProgress(float partialTick);
+	@Shadow private static void tick(Level level, BlockPos blockPos, BlockState blockState, PistonMovingBlockEntity pistonMovingBlockEntity) { }
 
-	@Inject(
-		method = "<init>(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V",
-		at = @At(
-			value = "RETURN"
-		)
-	)
-	private void onInit(BlockPos pos, BlockState state, CallbackInfo ci) {
-		float offset = BlockEventCounters.subticks;
-		float range = BlockEventCounters.subticksTarget + 1;
-
-		if (offset > 0 && range > 0) {
-			startProgress_bes = offset / (range * TICKS_TO_EXTEND);
-		}
-	}
+	@Shadow private float getProgress(float partialTick) { return 0.0F; }
 
 	@Inject(
 		method = "getProgress",
@@ -62,20 +56,24 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 	)
 	private void adjustProgress(float partialTick, CallbackInfoReturnable<Float> cir) {
 		if (level.isClientSide() && !skipProgressAdjustment_bes) {
-			float progress;
+			if (BlockEventSeparator.getAnimationMode() == AnimationMode.FIXED_SPEED) {
+				partialTick = TimerHelper.savedPartialTick;
+			}
+
+			float p;
 
 			try {
 				skipProgressAdjustment_bes = true;
-				progress = getProgress(partialTick);
+				p = getProgress(partialTick);
 			} finally {
 				skipProgressAdjustment_bes = false;
 			}
 
 			if (startProgress_bes > 0.0F) {
-				progress = adjustProgress_bes(progress);
+				p = adjustProgress_bes(p);
 			}
 
-			cir.setReturnValue(progress);
+			cir.setReturnValue(p);
 		}
 	}
 
@@ -100,7 +98,35 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 		}
 	}
 
-	private float adjustProgress_bes(float progress) {
-		return progress < startProgress_bes ? 0.0F : (progress - startProgress_bes) / (1.0F - startProgress_bes);
+	@Override
+	public void onClientLevelSet() {
+		animationOffset_bes = switch (BlockEventSeparator.getClientSeparationMode()) {
+			case DEPTH -> BlockEventCounters.subticks;
+			case INDEX -> BlockEventCounters.subticks;
+			case BLOCK -> BlockEventCounters.movingBlocks++ * BlockEventSeparator.getClientSeparationInterval();
+			default    -> 0;
+		};
+		int range = BlockEventCounters.subticksTarget + 1;
+
+		startProgress_bes = (float)animationOffset_bes / (range * TICKS_TO_EXTEND);
+	}
+
+	@Override
+	public void extraTick_bes() {
+		if (shouldDoExtraTick_bes()) {
+			tick(level, worldPosition, getBlockState(), (PistonMovingBlockEntity)(Object)this);
+		}
+	}
+
+	private float adjustProgress_bes(float p) {
+		if (BlockEventSeparator.getAnimationMode() == AnimationMode.FIXED_SPEED) {
+			return (progress == 0.0F && BlockEventCounters.subticks < animationOffset_bes) ? 0.0F : p;
+		} else {
+			return p < startProgress_bes ? 0.0F : (p - startProgress_bes) / (1.0F - startProgress_bes);
+		}
+	}
+
+	private boolean shouldDoExtraTick_bes() {
+		return progress > 0.0F ? progressO < 1.0F : BlockEventCounters.subticks > animationOffset_bes;
 	}
 }

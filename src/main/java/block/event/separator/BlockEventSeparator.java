@@ -1,9 +1,7 @@
 package block.event.separator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -15,76 +13,84 @@ public class BlockEventSeparator {
 
 	public static final String MOD_ID = "block-event-separator";
 	public static final String MOD_NAME = "Block Event Separator";
-	public static final String MOD_VERSION = "1.0.0";
+	public static final String MOD_VERSION = "1.1.0";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
+
+	private static final List<Runnable> SERVER_SEPARATION_MODE_LISTENERS = new LinkedList<>();
+	private static final List<Runnable> SERVER_SEPARATION_INTERVAL_LISTENERS = new LinkedList<>();
+	private static final List<Runnable> ANIMATION_MODE_LISTENERS = new LinkedList<>();
 
 	/* Supplier for block event broadcast chunk distance */
 	public static Supplier<Integer> blockEventDistanceSupplier = Suppliers.ofInstance(4);
 
-	private static Mode mode = Mode.OFF;
-	private static final List<Runnable> modeListeners = new ArrayList<>();
-	
-	public static Mode getMode() {
-		return mode;
+	private static SeparationMode serverSeparationMode = SeparationMode.OFF;
+	private static SeparationMode clientSeparationMode = SeparationMode.OFF;
+	private static int serverSeparationInterval = 1;
+	private static int clientSeparationInterval = 1;
+	private static AnimationMode animationMode = AnimationMode.DEFAULT;
+
+	public static SeparationMode getServerSeparationMode() {
+		return serverSeparationMode;
 	}
 
-	public static void setMode(Mode newMode) {
-		if (newMode != null && newMode != mode) {
-			mode = newMode;
-			modeListeners.forEach(Runnable::run);
+	public static void setServerSeparationMode(SeparationMode mode) {
+		if (mode != null && mode != serverSeparationMode) {
+			serverSeparationMode = mode;
+			SERVER_SEPARATION_MODE_LISTENERS.forEach(Runnable::run);
 		}
 	}
-	
-	public static void addModeChangeListener(Runnable listener) {
-		modeListeners.add(listener);
+
+	public static void addServerSeparationModeListener(Runnable listener) {
+		SERVER_SEPARATION_MODE_LISTENERS.add(listener);
 	}
-	
-	public static enum Mode {
 
-		OFF(0, "off", ""),
-		DEPTH(1, "depth", "Block events are separated by depth (colloquially known as \"microticks\" or \"BED\"). Block events at the same depth start animating simultaneously. Depths are separated by 1gt worth of time."),
-		INDEX(2, "index", "Block events are separated by index, based on the order in which they were executed. They are separated by 1gt worth of time.");
+	public static SeparationMode getClientSeparationMode() {
+		return clientSeparationMode;
+	}
 
-		private static final Mode[] ALL;
-		private static final Map<String, Mode> BY_NAME;
-		
-		static {
-			
-			Mode[] modes = values();
-			
-			ALL = new Mode[modes.length];
-			BY_NAME = new HashMap<>();
-
-			for (Mode mode : modes) {
-				ALL[mode.index] = mode;
-				BY_NAME.put(mode.name, mode);
-			}
+	public static void setClientSeparationMode(SeparationMode mode) {
+		if (mode != null && mode != clientSeparationMode) {
+			clientSeparationMode = mode;
 		}
+	}
 
-		public final int index;
-		public final String name;
-		public final String description;
+	public static int getServerSeparationInterval() {
+		return serverSeparationInterval;
+	}
 
-		private Mode(int index, String name, String description) {
-			this.index = index;
-			this.name = name;
-			this.description = description;
+	public static void setServerSeparationInterval(int interval) {
+		if (interval != serverSeparationInterval) {
+			serverSeparationInterval = interval;
+			SERVER_SEPARATION_INTERVAL_LISTENERS.forEach(Runnable::run);
 		}
+	}
 
-		public static Mode fromName(String name) {
-			return BY_NAME.get(name);
-		}
+	public static void addServerSeparationIntervalListener(Runnable listener) {
+		SERVER_SEPARATION_INTERVAL_LISTENERS.add(listener);
+	}
 
-		public static Mode fromIndex(int index) {
-			if (index >= 0 && index < ALL.length) {
-				return ALL[index];
-			}
-			
-			return null;
+	public static int getClientSeparationInterval() {
+		return clientSeparationInterval;
+	}
+
+	public static void setClientSeparationInterval(int interval) {
+		if (interval != clientSeparationInterval) {
+			clientSeparationInterval = interval;
 		}
-		
-		public static int getCount() {
-			return ALL.length;
+	}
+
+	public static AnimationMode getAnimationMode() {
+		return animationMode;
+	}
+
+	public static void setAnimationMode(AnimationMode mode) {
+		if (mode != null && mode != animationMode) {
+			animationMode = mode;
+			ANIMATION_MODE_LISTENERS.forEach(Runnable::run);
 		}
+	}
+
+	public static void addAnimationModeListener(Runnable listener) {
+		ANIMATION_MODE_LISTENERS.add(listener);
 	}
 }

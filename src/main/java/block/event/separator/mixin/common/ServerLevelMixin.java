@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
+import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparator;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
@@ -38,14 +39,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 	private final Queue<BlockEvent> successfulBlockEvents_bes = new LinkedList<>();
 
-	private int currentDepth_bes;
-	private int currentBatch_bes;
-	private int total_bes;
-
 	private int gcp_microtick; // field from G4mespeed Capture & Playback
 
-	protected ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, DimensionType dimensionType, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
-		super(data, dimension, dimensionType, supplier, isClient, isDebug, seed);
+	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, DimensionType dimensionType, Supplier<ProfilerFiller> profiler, boolean isClient, boolean isDebug, long seed) {
+		super(data, dimension, dimensionType, profiler, isClient, isDebug, seed);
 	}
 
 	@Inject(
@@ -55,9 +52,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void preBlockEvents(CallbackInfo ci) {
-		currentDepth_bes = 0;
-		currentBatch_bes = blockEvents.size();
-		total_bes = 0;
+		BlockEventCounters.currentDepth = 0;
+		BlockEventCounters.currentBatch = blockEvents.size();
+		BlockEventCounters.total = 0;
+		BlockEventCounters.movingBlocksTotal = 0;
 	}
 
 	@Inject(
@@ -71,12 +69,12 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void onNextBlockEvent(CallbackInfo ci) {
 		if (!blockEvents.isEmpty()) {
-			if (currentBatch_bes == 0) {
-				currentDepth_bes++;
-				currentBatch_bes = blockEvents.size();
+			if (BlockEventCounters.currentBatch == 0) {
+				BlockEventCounters.currentDepth++;
+				BlockEventCounters.currentBatch = blockEvents.size();
 			}
 
-			currentBatch_bes--;
+			BlockEventCounters.currentBatch--;
 		}
 	}
 
@@ -87,7 +85,17 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void postBlockEvents(CallbackInfo ci) {
-		((IMinecraftServer)server).postBlockEvents_bes(currentDepth_bes, total_bes);
+		((IMinecraftServer)server).postBlockEvents_bes();
+	}
+
+	@Inject(
+		method = "doBlockEvent",
+		at = @At(
+			value = "HEAD"
+		)
+	)
+	private void onBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
+		BlockEventCounters.movingBlocksThisEvent = 0;
 	}
 
 	@Inject(
@@ -101,12 +109,13 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		if (cir.getReturnValue()) {
 			// G4mespeed Capture & Playback can do multiple block events
 			// per cycle, in which case we have to adjust our depth value.
-			currentDepth_bes = Math.max(currentDepth_bes, gcp_microtick);
-			total_bes++;
+			BlockEventCounters.currentDepth = Math.max(BlockEventCounters.currentDepth, gcp_microtick);
+			BlockEventCounters.total++;
 
-			int offset = switch (BlockEventSeparator.getMode()) {
-				case DEPTH -> currentDepth_bes;
-				case INDEX -> total_bes - 1;
+			int offset = switch (BlockEventSeparator.getServerSeparationMode()) {
+				case DEPTH -> BlockEventCounters.currentDepth;
+				case INDEX -> BlockEventCounters.total - 1;
+				case BLOCK -> BlockEventCounters.movingBlocksTotal - BlockEventCounters.movingBlocksThisEvent;
 				default    -> 0;
 			};
 
@@ -118,12 +127,12 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	}
 
 	@Override
-	public void sendBlockEvents_bes(int maxOffset) {
+	public void sendBlockEvents_bes(int offsetLimit) {
 		while (!successfulBlockEvents_bes.isEmpty()) {
 			BlockEvent blockEvent = successfulBlockEvents_bes.peek();
 			int offset = blockEvent.animationOffset;
 
-			if (offset > maxOffset) {
+			if (offset > offsetLimit) {
 				break;
 			}
 

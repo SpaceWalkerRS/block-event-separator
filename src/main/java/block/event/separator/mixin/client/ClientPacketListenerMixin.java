@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import block.event.separator.BlockEventSeparator;
+import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraft;
 
 import net.minecraft.client.Minecraft;
@@ -41,10 +42,16 @@ public class ClientPacketListenerMixin {
 			FriendlyByteBuf buffer = packet.getData();
 
 			switch (path) {
-			case "max_offset":
+			case "next_tick":
 				int maxOffset = buffer.readInt();
-				((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset);
-				
+				int interval = buffer.readInt();
+				int modeIndex = buffer.readByte();
+				SeparationMode mode = SeparationMode.fromIndex(modeIndex);
+
+				((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset, interval);
+				BlockEventSeparator.setClientSeparationInterval(interval);
+				BlockEventSeparator.setClientSeparationMode(mode);
+
 				break;
 			default:
 				BlockEventSeparator.LOGGER.info("Ignoring packet with unknown id \'" + path + "\'");
