@@ -36,7 +36,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 
 	private int animationOffset_bes;
 	/** The progress at which this block entity starts animating. */
-	private float startProgress_bes = 0.0F;
+	private float startProgress_bes;
 	private boolean skipProgressAdjustment_bes;
 
 	private PistonMovingBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
