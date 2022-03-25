@@ -4,18 +4,22 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEventCounters;
+import block.event.separator.BlockEventSeparator;
+import block.event.separator.interfaces.mixin.IBlockEntity;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 
-@Mixin(PistonMovingBlockEntity.class)
-public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
+@Mixin(
+	value = PistonMovingBlockEntity.class,
+	priority = 999
+)
+public abstract class PistonMovingBlockEntityMixin extends BlockEntity implements IBlockEntity {
 
 	private static final int TICKS_TO_EXTEND = 2;
 
@@ -24,23 +28,8 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 	/** The progress at which this block entity starts animating. */
 	private float startProgress_bes;
 
-	public PistonMovingBlockEntityMixin(BlockEntityType<?> type) {
+	private PistonMovingBlockEntityMixin(BlockEntityType<?> type) {
 		super(type);
-	}
-
-	@Inject(
-		method = "<init>()V",
-		at = @At(
-			value = "RETURN"
-		)
-	)
-	private void onInit(CallbackInfo ci) {
-		float offset = BlockEventCounters.subticks;
-		float range = BlockEventCounters.subticksTarget + 1;
-
-		if (offset > 0 && range > 0) {
-			startProgress_bes = offset / (range * TICKS_TO_EXTEND);
-		}
 	}
 
 	@Inject(
@@ -55,7 +44,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 			// For block event separation to work, pistons have to start animating
 			// right away, rather than after the first tick, like in Vanilla.
 			float p = progress + (partialTick / TICKS_TO_EXTEND);
-			p = Mth.clamp(p, 0.0F, 1.0F); 
+			p = Mth.clamp(p, 0.0F, 1.0F);
 
 			if (startProgress_bes > 0.0F) {
 				p = adjustProgress_bes(p);
@@ -65,7 +54,28 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity {
 		}
 	}
 
-	private float adjustProgress_bes(float progress) {
-		return progress < startProgress_bes ? 0.0F : (progress - startProgress_bes) / (1.0F - startProgress_bes);
+	@Override
+	public void onClientLevelSet() {
+		int offset;
+		switch (BlockEventSeparator.clientSeparationMode) {
+		case DEPTH:
+			offset = BlockEventCounters.subticks;
+			break;
+		case INDEX:
+			offset = BlockEventCounters.subticks;
+			break;
+		case BLOCK:
+			offset = BlockEventCounters.movingBlocks++ * BlockEventSeparator.clientSeparationInterval;
+			break;
+		default:
+			offset = 0;
+		}
+		int range = BlockEventCounters.subticksTarget + 1;
+
+		startProgress_bes = (float)offset / (range * TICKS_TO_EXTEND);
+	}
+
+	private float adjustProgress_bes(float p) {
+		return p < startProgress_bes ? 0.0F : (p - startProgress_bes) / (1.0F - startProgress_bes);
 	}
 }

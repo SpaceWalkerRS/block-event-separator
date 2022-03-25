@@ -3,8 +3,8 @@ package block.event.separator.mixin.client;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.At.Shift;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import block.event.separator.BlockEventCounters;
@@ -76,8 +76,18 @@ public class MinecraftMixin implements IMinecraft {
 			args = "ldc=tick"
 		)
 	)
-	private void adjustPartialTick(boolean isRunning, CallbackInfo ci) {
-		((ITimer)timer).adjustPartialTick_bes();
+	private void savePartialTick(boolean isRunning, CallbackInfo ci) {
+		((ITimer)timer).savePartialTick_bes();
+	}
+
+	@Inject(
+		method = "runTick",
+		at = @At(
+			value = "RETURN"
+		)
+	)
+	private void loadPartialTick(boolean isRunning, CallbackInfo ci) {
+		((ITimer)timer).loadPartialTick_bes();
 	}
 
 	@Inject(
@@ -92,8 +102,8 @@ public class MinecraftMixin implements IMinecraft {
 		if (queuedTicks_bes > 0) {
 			queuedTicks_bes--;
 		} else {
-			// keep packet handling going
 			if (!pause && level != null) {
+				// keep packet handling going
 				gameMode.tick();
 			}
 
@@ -102,12 +112,12 @@ public class MinecraftMixin implements IMinecraft {
 	}
 
 	@Override
-	public void updateMaxOffset_bes(int maxOffset) {
+	public void updateMaxOffset_bes(int maxOffset, int interval) {
 		prevPrevMaxOffset_bes = prevMaxOffset_bes;
 		prevMaxOffset_bes = maxOffset_bes;
 		maxOffset_bes = maxOffset;
 
-		int subticksTarget = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+		int subticksTarget = interval * MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 
 		if (nextSubticksTarget_bes < 0) {
 			BlockEventCounters.subticksTarget = subticksTarget;
@@ -119,5 +129,7 @@ public class MinecraftMixin implements IMinecraft {
 			BlockEventCounters.subticksTarget += nextSubticksTarget_bes;
 			nextSubticksTarget_bes = subticksTarget;
 		}
+
+		BlockEventCounters.movingBlocks = 0;
 	}
 }
