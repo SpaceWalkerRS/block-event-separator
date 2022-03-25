@@ -8,7 +8,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparator;
+import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 import block.event.separator.utils.MathUtils;
@@ -35,6 +37,9 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Shadow private ProfilerFiller profiler;
 	@Shadow private PlayerList playerList;
 
+	private SeparationMode mode_bes;
+	private int separationInterval_bes;
+
 	// These are the maximum animation offsets of the past few ticks.
 	private int prevPrevMaxOffset_bes;
 	private int prevMaxOffset_bes;
@@ -47,6 +52,8 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	private int maxBlockEventDepth_bes;
 	/** The greatest number of block events across all levels in the past tick. */
 	private int maxBlockEventTotal_bes;
+	/** The greatest number of moving blocks across all levels in the past tick. */
+	private int maxMovingBlocksTotal_bes;
 
 	@Shadow protected abstract Iterable<ServerLevel> getAllLevels();
 	@Shadow protected abstract ServerConnectionListener getConnection();
@@ -84,11 +91,15 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		}
 
 		if (subticks_bes == 0) {
+			mode_bes = BlockEventSeparator.serverSeparationMode;
+			separationInterval_bes = BlockEventSeparator.serverSeparationInterval;
+
 			prevPrevMaxOffset_bes = prevMaxOffset_bes;
 			prevMaxOffset_bes = maxOffset_bes;
-			maxOffset_bes = switch (BlockEventSeparator.mode) {
+			maxOffset_bes = switch (mode_bes) {
 				case DEPTH -> maxBlockEventDepth_bes;
 				case INDEX -> maxBlockEventTotal_bes - 1;
+				case BLOCK -> maxMovingBlocksTotal_bes - 1;
 				default    -> 0;
 			};
 
@@ -100,8 +111,9 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 			// value for which there is no separation.
 			maxBlockEventDepth_bes = 0; // depth is zero-indexed
 			maxBlockEventTotal_bes = 1; // total is not
+			maxMovingBlocksTotal_bes = 1;
 
-			subticksTarget_bes = MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
+			subticksTarget_bes = separationInterval_bes * MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 		}
 
 		syncBlockEvents_bes();
@@ -112,9 +124,10 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	}
 
 	@Override
-	public void postBlockEvents_bes(int maxDepth, int total) {
-		maxBlockEventDepth_bes = Math.max(maxBlockEventDepth_bes, maxDepth);
-		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, total);
+	public void postBlockEvents_bes() {
+		maxBlockEventDepth_bes = Math.max(maxBlockEventDepth_bes, BlockEventCounters.currentDepth);
+		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, BlockEventCounters.total);
+		maxMovingBlocksTotal_bes = Math.max(maxMovingBlocksTotal_bes, BlockEventCounters.movingBlocksTotal);
 	}
 
 	private void syncTime_bes() {
@@ -134,23 +147,25 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 	private void syncMaxOffset_bes() {
 		String namespace = BlockEventSeparator.MOD_ID;
-		String path = "max_offset";
+		String path = "next_tick";
 		ResourceLocation id = new ResourceLocation(namespace, path);
 
 		ByteBuf buf = Unpooled.buffer();
 		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
 
 		buffer.writeInt(maxOffset_bes);
+		buffer.writeInt(separationInterval_bes);
+		buffer.writeByte(mode_bes.index);
 
 		Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
 		playerList.broadcastAll(packet);
 	}
 
 	private void syncBlockEvents_bes() {
-		int maxOffset = subticks_bes;
+		int offsetLimit = subticks_bes / separationInterval_bes;
 
 		for (ServerLevel level : getAllLevels()) {
-			((IServerLevel)level).sendBlockEvents_bes(maxOffset);
+			((IServerLevel)level).sendBlockEvents_bes(offsetLimit);
 		}
 	}
 }

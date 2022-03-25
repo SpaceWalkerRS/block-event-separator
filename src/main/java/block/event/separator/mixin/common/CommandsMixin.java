@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.brigadier.CommandDispatcher;
 
-import block.event.separator.command.SeparateBlockEventsCommand;
+import block.event.separator.command.BlockEventSeparatorCommand;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -29,6 +29,6 @@ public class CommandsMixin {
 		)
 	)
 	private void registerCommands(Commands.CommandSelection selection, CallbackInfo ci) {
-		SeparateBlockEventsCommand.register(dispatcher);
+		BlockEventSeparatorCommand.register(dispatcher);
 	}
 }
