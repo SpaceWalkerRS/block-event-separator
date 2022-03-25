@@ -13,7 +13,7 @@ public class BlockEventSeparator {
 
 	public static final String MOD_ID = "block-event-separator";
 	public static final String MOD_NAME = "Block Event Separator";
-	public static final String MOD_VERSION = "1.0.0";
+	public static final String MOD_VERSION = "1.1.0";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
 	private static final List<Runnable> SERVER_SEPARATION_MODE_LISTENERS = new LinkedList<>();
