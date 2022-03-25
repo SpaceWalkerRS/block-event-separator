@@ -59,9 +59,11 @@ public class BlockEventSeparatorModule implements GSIModule {
 		manager.runOnServer(serverManager -> {
 			GSTpsModule tpsModule = serverManager.getModule(GSTpsModule.class);
 
-			// Disable immediate block broadcast, since it is not compatible.
+			// Disable incompatible settings.
 			tpsModule.sImmediateBlockBroadcast.setEnabledInGui(false);
 			tpsModule.sImmediateBlockBroadcast.setValue(false);
+			tpsModule.sParanoidMode.setEnabledInGui(false);
+			tpsModule.sParanoidMode.setValue(false);
 
 			// Register block event distance method
 			BlockEventSeparator.blockEventDistanceSupplier = tpsModule.sBlockEventDistance::getValue;
