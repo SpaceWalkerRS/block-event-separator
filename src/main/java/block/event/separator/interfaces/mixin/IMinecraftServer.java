@@ -6,6 +6,6 @@ public interface IMinecraftServer {
 		return false;
 	}
 
-	public void postBlockEvents_bes(int maxDepth, int total);
+	public void postBlockEvents_bes();
 
 }
