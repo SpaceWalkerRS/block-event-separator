@@ -91,6 +91,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void postBlockEvents(CallbackInfo ci) {
+		if (ignoreLastBatch_bes) {
+			BlockEventCounters.currentDepth--;
+		}
+
 		((IMinecraftServer)server).postBlockEvents_bes();
 	}
 
@@ -101,10 +105,6 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void onBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
-		if (ignoreLastBatch_bes) {
-			BlockEventCounters.currentDepth--;
-		}
-
 		BlockEventCounters.movingBlocksThisEvent = 0;
 	}
 
