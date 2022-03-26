@@ -40,6 +40,9 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 	private final Queue<BlockEvent> successfulBlockEvents_bes = new LinkedList<>();
 
+	// If the last batch does not have any successful block events,
+	// its depth can be ignored for the max offset calculations.
+	private boolean ignoreLastBatch_bes;
 	private int gcp_microtick; // field from G4mespeed Capture & Playback
 
 	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
@@ -73,6 +76,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 			if (BlockEventCounters.currentBatch == 0) {
 				BlockEventCounters.currentDepth++;
 				BlockEventCounters.currentBatch = blockEvents.size();
+
+				ignoreLastBatch_bes = true;
 			}
 
 			BlockEventCounters.currentBatch--;
@@ -96,6 +101,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void onBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
+		if (ignoreLastBatch_bes) {
+			BlockEventCounters.currentDepth--;
+		}
+
 		BlockEventCounters.movingBlocksThisEvent = 0;
 	}
 
@@ -119,6 +128,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 				case BLOCK -> BlockEventCounters.movingBlocksTotal - BlockEventCounters.movingBlocksThisEvent;
 				default    -> 0;
 			};
+
+			ignoreLastBatch_bes = false;
 
 			BlockEvent blockEvent = BlockEvent.of(data, offset);
 			successfulBlockEvents_bes.add(blockEvent);
