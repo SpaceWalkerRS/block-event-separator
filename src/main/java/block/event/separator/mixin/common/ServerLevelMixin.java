@@ -39,6 +39,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 	private final Queue<BlockEvent> successfulBlockEvents_bes = new LinkedList<>();
 
+	// If the last batch does not have any successful block events,
+	// its depth can be ignored for the max offset calculations.
+	private boolean ignoreLastBatch_bes;
+
 	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, DimensionType dimensionType, Supplier<ProfilerFiller> profiler, boolean isClient, boolean isDebug, long seed) {
 		super(data, dimension, dimensionType, profiler, isClient, isDebug, seed);
 	}
@@ -70,6 +74,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 			if (BlockEventCounters.currentBatch == 0) {
 				BlockEventCounters.currentDepth++;
 				BlockEventCounters.currentBatch = blockEvents.size();
+
+				ignoreLastBatch_bes = true;
 			}
 
 			BlockEventCounters.currentBatch--;
@@ -83,6 +89,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void postBlockEvents(CallbackInfo ci) {
+		if (ignoreLastBatch_bes) {
+			BlockEventCounters.currentDepth--;
+		}
+
 		((IMinecraftServer)server).postBlockEvents_bes();
 	}
 
@@ -113,6 +123,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 				case BLOCK -> BlockEventCounters.movingBlocksTotal - BlockEventCounters.movingBlocksThisEvent;
 				default    -> 0;
 			};
+
+			ignoreLastBatch_bes = false;
 
 			BlockEvent blockEvent = BlockEvent.of(data, offset);
 			successfulBlockEvents_bes.add(blockEvent);
