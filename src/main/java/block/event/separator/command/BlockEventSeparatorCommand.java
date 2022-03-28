@@ -8,7 +8,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.SeparationMode;
 
 import net.minecraft.ChatFormatting;
@@ -58,7 +58,7 @@ public class BlockEventSeparatorCommand {
 	}
 
 	private static int queryMode(CommandSourceStack source) {
-		SeparationMode mode = BlockEventSeparator.serverSeparationMode;
+		SeparationMode mode = BlockEventSeparatorMod.serverSeparationMode;
 		Component text;
 
 		if (mode == SeparationMode.OFF) {
@@ -86,7 +86,7 @@ public class BlockEventSeparatorCommand {
 			throw ERROR_INVALID_NAME.create();
 		}
 
-		BlockEventSeparator.serverSeparationMode = mode;
+		BlockEventSeparatorMod.serverSeparationMode = mode;
 		Component text;
 
 		if (mode == SeparationMode.OFF) {
@@ -108,7 +108,7 @@ public class BlockEventSeparatorCommand {
 	}
 
 	private static int queryInterval(CommandSourceStack source) {
-		int interval = BlockEventSeparator.serverSeparationInterval;
+		int interval = BlockEventSeparatorMod.serverSeparationInterval;
 
 		Component text = new TextComponent(String.format("The separation interval is currently set to %s", interval));
 		source.sendSuccess(text, false);
@@ -117,7 +117,7 @@ public class BlockEventSeparatorCommand {
 	}
 
 	private static int setInterval(CommandSourceStack source, int interval) {
-		BlockEventSeparator.serverSeparationInterval = interval;
+		BlockEventSeparatorMod.serverSeparationInterval = interval;
 
 		Component text = new TextComponent(String.format("Set the separation interval to %s", interval));
 		source.sendSuccess(text, true);

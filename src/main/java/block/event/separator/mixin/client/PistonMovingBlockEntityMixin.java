@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEventCounters;
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.interfaces.mixin.IBlockEntity;
 
 import net.minecraft.core.BlockPos;
@@ -59,10 +59,10 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 
 	@Override
 	public void onClientLevelSet() {
-		int offset = switch (BlockEventSeparator.clientSeparationMode) {
+		int offset = switch (BlockEventSeparatorMod.clientSeparationMode) {
 			case DEPTH -> BlockEventCounters.subticks;
 			case INDEX -> BlockEventCounters.subticks;
-			case BLOCK -> BlockEventCounters.movingBlocks++ * BlockEventSeparator.clientSeparationInterval;
+			case BLOCK -> BlockEventCounters.movingBlocks++ * BlockEventSeparatorMod.clientSeparationInterval;
 			default    -> 0;
 		};
 		int range = BlockEventCounters.subticksTarget + 1;

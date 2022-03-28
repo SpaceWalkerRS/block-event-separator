@@ -22,6 +22,9 @@
 
 	"environment": "*",
 	"entrypoints": {
+		"main": [
+			"block.event.separator.BlockEventSeparatorMod"
+		]
 	},
 	"mixins": [
 		"block-event-separator.mixins.json"
