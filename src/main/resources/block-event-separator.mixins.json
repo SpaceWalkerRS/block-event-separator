@@ -15,8 +15,7 @@
 		"client.ClientPacketListenerMixin",
 		"client.IntegratedServerMixin",
 		"client.MinecraftMixin",
-		"client.PistonMovingBlockEntityMixin",
-		"client.TimerMixin"
+		"client.PistonMovingBlockEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
