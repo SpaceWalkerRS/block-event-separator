@@ -40,8 +40,17 @@ public class MinecraftMixin implements IMinecraft {
 	private int nextSubticksTarget_bes;
 	private int ticksThisFrame_bes;
 
-	private boolean frozen_bes;
-	private float savedPartialTick_bes;
+	private boolean serverFrozen_bes;
+
+	@Inject(
+		method = "<init>",
+		at = @At(
+			value = "RETURN"
+		)
+	)
+	private void init(CallbackInfo ci) {
+		TimerHelper.init(timer);
+	}
 
 	@Inject(
 		method = "runTick",
@@ -53,7 +62,7 @@ public class MinecraftMixin implements IMinecraft {
 		)
 	)
 	private void preTick(boolean isRunning, CallbackInfo ci, long time, int ticksThisFrame) {
-		if (!pause && !frozen_bes) {
+		if (!pause && !serverFrozen_bes) {
 			BlockEventCounters.subticks += ticksThisFrame;
 			ticksThisFrame_bes = 0;
 
@@ -86,7 +95,7 @@ public class MinecraftMixin implements IMinecraft {
 		)
 	)
 	private void savePartialTick(boolean isRunning, CallbackInfo ci) {
-		TimerHelper.savePartialTick(timer);
+		TimerHelper.savePartialTick();
 
 		if (BlockEventCounters.frozen) {
 			timer.partialTick = pausePartialTick;
@@ -100,7 +109,7 @@ public class MinecraftMixin implements IMinecraft {
 		)
 	)
 	private void loadPartialTick(boolean isRunning, CallbackInfo ci) {
-		TimerHelper.loadPartialTick(timer);
+		TimerHelper.loadPartialTick();
 	}
 
 	@Inject(
@@ -112,11 +121,11 @@ public class MinecraftMixin implements IMinecraft {
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {
-		BlockEventCounters.frozen = (ticksThisFrame_bes == 0) && frozen_bes;
+		BlockEventCounters.frozen = (ticksThisFrame_bes == 0) && serverFrozen_bes;
 
 		if (ticksThisFrame_bes > 0) {
 			ticksThisFrame_bes--;
-		} else if (!frozen_bes) {
+		} else if (!serverFrozen_bes) {
 			if (!pause && level != null) {
 				// keep packet handling going
 				gameMode.tick();
@@ -132,16 +141,18 @@ public class MinecraftMixin implements IMinecraft {
 
 	@Override
 	public void setFrozen_bes(boolean frozen) {
-		boolean wasFrozen = frozen_bes;
-		frozen_bes = frozen;
+		boolean wasFrozen = serverFrozen_bes;
+		serverFrozen_bes = frozen;
 
 		if (!wasFrozen && frozen) {
-			savedPartialTick_bes = timer.partialTick;
+			TimerHelper.freezePartialTick = timer.partialTick;
 			pausePartialTick = TimerHelper.adjustPartialTick(timer.partialTick);
 		} else
 		if (wasFrozen && !frozen) {
-			timer.partialTick = savedPartialTick_bes;
+			timer.partialTick = TimerHelper.freezePartialTick;
 		}
+
+		BlockEventCounters.frozen = serverFrozen_bes;
 	}
 
 	@Override

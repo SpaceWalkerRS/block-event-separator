@@ -57,7 +57,11 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 	private void adjustProgress(float partialTick, CallbackInfoReturnable<Float> cir) {
 		if (level.isClientSide() && !skipProgressAdjustment_bes) {
 			if (BlockEventSeparatorMod.getAnimationMode() == AnimationMode.FIXED_SPEED) {
-				partialTick = TimerHelper.savedPartialTick;
+				if (BlockEventCounters.frozen) {
+					partialTick = TimerHelper.freezePartialTick;
+				} else {
+					partialTick = TimerHelper.savedPartialTick;
+				}
 			}
 
 			float p;
