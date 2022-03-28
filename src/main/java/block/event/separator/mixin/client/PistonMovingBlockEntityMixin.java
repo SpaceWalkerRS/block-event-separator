@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.AnimationMode;
 import block.event.separator.BlockEventCounters;
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.TimerHelper;
 import block.event.separator.interfaces.mixin.IBlockEntity;
 import block.event.separator.interfaces.mixin.IPistonMovingBlockEntity;
@@ -56,7 +56,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 	)
 	private void adjustProgress(float partialTick, CallbackInfoReturnable<Float> cir) {
 		if (level.isClientSide() && !skipProgressAdjustment_bes) {
-			if (BlockEventSeparator.getAnimationMode() == AnimationMode.FIXED_SPEED) {
+			if (BlockEventSeparatorMod.getAnimationMode() == AnimationMode.FIXED_SPEED) {
 				partialTick = TimerHelper.savedPartialTick;
 			}
 
@@ -100,10 +100,10 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 
 	@Override
 	public void onClientLevelSet() {
-		animationOffset_bes = switch (BlockEventSeparator.getClientSeparationMode()) {
+		animationOffset_bes = switch (BlockEventSeparatorMod.getClientSeparationMode()) {
 			case DEPTH -> BlockEventCounters.subticks;
 			case INDEX -> BlockEventCounters.subticks;
-			case BLOCK -> BlockEventCounters.movingBlocks++ * BlockEventSeparator.getClientSeparationInterval();
+			case BLOCK -> BlockEventCounters.movingBlocks++ * BlockEventSeparatorMod.getClientSeparationInterval();
 			default    -> 0;
 		};
 		int range = BlockEventCounters.subticksTarget + 1;
@@ -119,7 +119,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 	}
 
 	private float adjustProgress_bes(float p) {
-		if (BlockEventSeparator.getAnimationMode() == AnimationMode.FIXED_SPEED) {
+		if (BlockEventSeparatorMod.getAnimationMode() == AnimationMode.FIXED_SPEED) {
 			return (progress == 0.0F && BlockEventCounters.subticks < animationOffset_bes) ? 0.0F : p;
 		} else {
 			return p < startProgress_bes ? 0.0F : (p - startProgress_bes) / (1.0F - startProgress_bes);

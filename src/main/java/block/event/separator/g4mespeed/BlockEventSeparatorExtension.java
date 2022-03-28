@@ -9,17 +9,17 @@ import com.g4mesoft.core.server.GSServerController;
 import com.g4mesoft.packet.GSIPacket;
 import com.g4mesoft.registry.GSSupplierRegistry;
 
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 public class BlockEventSeparatorExtension implements GSIExtension {
 
-	public static final String NAME = BlockEventSeparator.MOD_NAME;
+	public static final String NAME = BlockEventSeparatorMod.MOD_NAME;
 	/* "BESM" in ASCII as HEX */
 	public static final GSExtensionUID UID = new GSExtensionUID(0x4245534D);
-	public static final GSVersion VERSION = decodeVersionString(BlockEventSeparator.MOD_VERSION);
+	public static final GSVersion VERSION = decodeVersionString(BlockEventSeparatorMod.MOD_VERSION);
 	
 	public static final GSExtensionInfo INFO = new GSExtensionInfo(NAME, UID, VERSION);
 	
@@ -66,7 +66,7 @@ public class BlockEventSeparatorExtension implements GSIExtension {
 	private static GSVersion decodeVersionString(String modVersion) {
 		int majorVersion = 1, minorVersion = 0, patchVersion = 0;
 		
-		String[] args = BlockEventSeparator.MOD_VERSION.split("\\.");
+		String[] args = BlockEventSeparatorMod.MOD_VERSION.split("\\.");
 		if (args.length == 3) {
 			try {
 				majorVersion = Integer.parseInt(args[0]);

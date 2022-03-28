@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraft;
 
@@ -38,10 +38,15 @@ public class ClientPacketListenerMixin {
 		String namespace = id.getNamespace();
 		String path = id.getPath();
 
-		if (BlockEventSeparator.MOD_ID.equals(namespace)) {
+		if (BlockEventSeparatorMod.MOD_ID.equals(namespace)) {
 			FriendlyByteBuf buffer = packet.getData();
 
 			switch (path) {
+			case "freeze":
+				boolean frozen = buffer.readBoolean();
+				((IMinecraft)minecraft).setFrozen_bes(frozen);
+
+				break;
 			case "next_tick":
 				int maxOffset = buffer.readInt();
 				int interval = buffer.readInt();
@@ -49,12 +54,12 @@ public class ClientPacketListenerMixin {
 				SeparationMode mode = SeparationMode.fromIndex(modeIndex);
 
 				((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset, interval);
-				BlockEventSeparator.setClientSeparationInterval(interval);
-				BlockEventSeparator.setClientSeparationMode(mode);
+				BlockEventSeparatorMod.setClientSeparationInterval(interval);
+				BlockEventSeparatorMod.setClientSeparationMode(mode);
 
 				break;
 			default:
-				BlockEventSeparator.LOGGER.info("Ignoring packet with unknown id \'" + path + "\'");
+				BlockEventSeparatorMod.LOGGER.info("Ignoring packet with unknown id \'" + path + "\'");
 
 				return;
 			}

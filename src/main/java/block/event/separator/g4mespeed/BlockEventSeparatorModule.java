@@ -13,7 +13,7 @@ import com.g4mesoft.setting.GSSettingManager;
 import com.g4mesoft.setting.types.GSIntegerSetting;
 
 import block.event.separator.AnimationMode;
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.SeparationMode;
 
 public class BlockEventSeparatorModule implements GSIModule {
@@ -66,7 +66,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 			tpsModule.sParanoidMode.setValue(false);
 
 			// Register block event distance method
-			BlockEventSeparator.blockEventDistanceSupplier = tpsModule.sBlockEventDistance::getValue;
+			BlockEventSeparatorMod.blockEventDistanceSupplier = tpsModule.sBlockEventDistance::getValue;
 
 			// Detect whenever the separation mode setting changed
 			serverManager.getSettingManager().addChangeListener(new GSISettingChangeListener() {
@@ -83,16 +83,16 @@ public class BlockEventSeparatorModule implements GSIModule {
 			});
 
 			// Detect whenever the mode is changed via command
-			BlockEventSeparator.addServerSeparationModeListener(() -> {
-				SeparationMode mode = BlockEventSeparator.getServerSeparationMode();
+			BlockEventSeparatorMod.addServerSeparationModeListener(() -> {
+				SeparationMode mode = BlockEventSeparatorMod.getServerSeparationMode();
 
 				if (mode.index != sSeparationMode.getValue()) {
 					sSeparationMode.setValue(mode.index);
 				}
 			});
 			// Detect whenever the interval is changed via command
-			BlockEventSeparator.addServerSeparationIntervalListener(() -> {
-				int interval = BlockEventSeparator.getServerSeparationInterval();
+			BlockEventSeparatorMod.addServerSeparationIntervalListener(() -> {
+				int interval = BlockEventSeparatorMod.getServerSeparationInterval();
 
 				if (interval != sSeparationInterval.getValue()) {
 					sSeparationInterval.setValue(interval);
@@ -108,27 +108,27 @@ public class BlockEventSeparatorModule implements GSIModule {
 	private void onSeparationModeSettingChanged() {
 		SeparationMode mode = SeparationMode.fromIndex(sSeparationMode.getValue());
 
-		if (mode != BlockEventSeparator.getServerSeparationMode()) {
+		if (mode != BlockEventSeparatorMod.getServerSeparationMode()) {
 			// Ensure that we do not get change listener loop.
-			BlockEventSeparator.setServerSeparationMode(mode);
+			BlockEventSeparatorMod.setServerSeparationMode(mode);
 		}
 	}
 
 	private void onSeparationIntervalSettingChanged() {
 		int interval = sSeparationInterval.getValue();
 
-		if (interval != BlockEventSeparator.getServerSeparationInterval()) {
+		if (interval != BlockEventSeparatorMod.getServerSeparationInterval()) {
 			// Ensure that we do not get change listener loop.
-			BlockEventSeparator.setServerSeparationInterval(interval);
+			BlockEventSeparatorMod.setServerSeparationInterval(interval);
 		}
 	}
 
 	private void onAnimationModeSettingChanged() {
 		AnimationMode mode = AnimationMode.fromIndex(cAnimationMode.getValue());
 
-		if (mode != BlockEventSeparator.getAnimationMode()) {
+		if (mode != BlockEventSeparatorMod.getAnimationMode()) {
 			// Ensure that we do not get change listener loop.
-			BlockEventSeparator.setAnimationMode(mode);
+			BlockEventSeparatorMod.setAnimationMode(mode);
 		}
 	}
 

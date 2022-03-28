@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventCounters;
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 
@@ -122,7 +122,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 			BlockEventCounters.currentDepth = Math.max(BlockEventCounters.currentDepth, gcp_microtick);
 			BlockEventCounters.total++;
 
-			int offset = switch (BlockEventSeparator.getServerSeparationMode()) {
+			int offset = switch (BlockEventSeparatorMod.getServerSeparationMode()) {
 				case DEPTH -> BlockEventCounters.currentDepth;
 				case INDEX -> BlockEventCounters.total - 1;
 				case BLOCK -> BlockEventCounters.movingBlocksTotal - BlockEventCounters.movingBlocksThisEvent;
@@ -166,6 +166,6 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 	private float getBlockEventRange_bes() {
 		// Convert chunk distance to block distance
-		return 16.0f * BlockEventSeparator.blockEventDistanceSupplier.get();
+		return 16.0f * BlockEventSeparatorMod.blockEventDistanceSupplier.get();
 	}
 }
