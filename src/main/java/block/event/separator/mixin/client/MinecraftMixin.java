@@ -82,11 +82,15 @@ public class MinecraftMixin implements IMinecraft {
 		at = @At(
 			value = "INVOKE_STRING",
 			target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V",
-			args = "ldc=tick"
+			args = "ldc=render"
 		)
 	)
 	private void savePartialTick(boolean isRunning, CallbackInfo ci) {
 		TimerHelper.savePartialTick(timer);
+
+		if (BlockEventCounters.frozen) {
+			timer.partialTick = pausePartialTick;
+		}
 	}
 
 	@Inject(
