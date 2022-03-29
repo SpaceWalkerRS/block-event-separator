@@ -6,9 +6,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.google.j2objc.annotations.ReflectionSupport.Level;
-
 import block.event.separator.BlockEventCounters;
+
+import net.minecraft.world.level.Level;
 
 @Mixin(Level.class)
 public class LevelMixin {
