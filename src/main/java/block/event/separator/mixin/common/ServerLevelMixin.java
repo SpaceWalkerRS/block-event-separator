@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventCounters;
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 
@@ -119,7 +119,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 			BlockEventCounters.total++;
 
 			int offset;
-			switch (BlockEventSeparator.serverSeparationMode) {
+			switch (BlockEventSeparatorMod.serverSeparationMode) {
 			case DEPTH:
 				offset = BlockEventCounters.currentDepth;
 				break;
