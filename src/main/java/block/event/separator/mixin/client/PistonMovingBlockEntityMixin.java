@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEventCounters;
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.interfaces.mixin.IBlockEntity;
 
 import net.minecraft.util.Mth;
@@ -57,7 +57,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 	@Override
 	public void onClientLevelSet() {
 		int offset;
-		switch (BlockEventSeparator.clientSeparationMode) {
+		switch (BlockEventSeparatorMod.clientSeparationMode) {
 		case DEPTH:
 			offset = BlockEventCounters.subticks;
 			break;
@@ -65,7 +65,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 			offset = BlockEventCounters.subticks;
 			break;
 		case BLOCK:
-			offset = BlockEventCounters.movingBlocks++ * BlockEventSeparator.clientSeparationInterval;
+			offset = BlockEventCounters.movingBlocks++ * BlockEventSeparatorMod.clientSeparationInterval;
 			break;
 		default:
 			offset = 0;

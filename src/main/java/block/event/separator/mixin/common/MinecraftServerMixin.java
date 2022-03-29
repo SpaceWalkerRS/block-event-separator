@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import block.event.separator.BlockEventCounters;
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
@@ -39,6 +39,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 	private SeparationMode mode_bes;
 	private int separationInterval_bes;
+	private boolean frozen_bes;
 
 	// These are the maximum animation offsets of the past few ticks.
 	private int prevPrevMaxOffset_bes;
@@ -66,6 +67,13 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		)
 	)
 	private void cancelTick(BooleanSupplier isAheadOfTime, CallbackInfo ci) {
+		boolean wasFrozen = frozen_bes;
+		frozen_bes = BlockEventSeparatorMod.isFrozen();
+
+		if (frozen_bes != wasFrozen) {
+			syncFreeze_bes();
+		}
+
 		if (subticks_bes > 0) {
 			// G4mespeed relies on time sync packets
 			// to sync the client to the server.
@@ -86,13 +94,13 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		)
 	)
 	private void adjustNextTickTime(CallbackInfo ci) {
-		if (isPaused()) {
+		if (isPaused() || frozen_bes) {
 			return;
 		}
 
 		if (subticks_bes == 0) {
-			mode_bes = BlockEventSeparator.serverSeparationMode;
-			separationInterval_bes = BlockEventSeparator.serverSeparationInterval;
+			mode_bes = BlockEventSeparatorMod.serverSeparationMode;
+			separationInterval_bes = BlockEventSeparatorMod.serverSeparationInterval;
 
 			prevPrevMaxOffset_bes = prevMaxOffset_bes;
 			prevMaxOffset_bes = maxOffset_bes;
@@ -112,7 +120,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 			// The max offset is synced every tick to make sure
 			// clients with low frame rates don't get out of whack.
-			syncMaxOffset_bes();
+			syncNextTick_bes();
 
 			// Reset the block event counters to the lowest
 			// value for which there is no separation.
@@ -152,8 +160,22 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		}
 	}
 
-	private void syncMaxOffset_bes() {
-		String namespace = BlockEventSeparator.MOD_ID;
+	private void syncFreeze_bes() {
+		String namespace = BlockEventSeparatorMod.MOD_ID;
+		String path = "freeze";
+		ResourceLocation id = new ResourceLocation(namespace, path);
+
+		ByteBuf buf = Unpooled.buffer();
+		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
+
+		buffer.writeBoolean(frozen_bes);
+
+		Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
+		playerList.broadcastAll(packet);
+	}
+
+	private void syncNextTick_bes() {
+		String namespace = BlockEventSeparatorMod.MOD_ID;
 		String path = "next_tick";
 		ResourceLocation id = new ResourceLocation(namespace, path);
 
