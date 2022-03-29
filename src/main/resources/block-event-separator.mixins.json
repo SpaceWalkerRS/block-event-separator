@@ -13,8 +13,8 @@
 	"client": [
 		"client.ClientPacketListenerMixin",
 		"client.IntegratedServerMixin",
+		"client.LevelMixin",
 		"client.MinecraftMixin",
-		"client.MultiPlayerLevelMixin",
 		"client.PistonHeadRendererMixin",
 		"client.PistonMovingBlockEntityMixin"
 	],
