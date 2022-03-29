@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.AnimationMode;
 import block.event.separator.BlockEventCounters;
-import block.event.separator.BlockEventSeparator;
+import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.TimerHelper;
 import block.event.separator.interfaces.mixin.IBlockEntity;
 import block.event.separator.interfaces.mixin.IPistonMovingBlockEntity;
@@ -51,8 +51,12 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 	)
 	private void adjustProgress(float partialTick, CallbackInfoReturnable<Float> cir) {
 		if (level.isClientSide() && !skipProgressAdjustment_bes) {
-			if (BlockEventSeparator.getAnimationMode() == AnimationMode.FIXED_SPEED) {
-				partialTick = TimerHelper.savedPartialTick;
+			if (BlockEventSeparatorMod.getAnimationMode() == AnimationMode.FIXED_SPEED) {
+				if (BlockEventCounters.frozen) {
+					partialTick = TimerHelper.freezePartialTick;
+				} else {
+					partialTick = TimerHelper.savedPartialTick;
+				}
 			}
 
 			float p;
@@ -95,7 +99,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 
 	@Override
 	public void onClientLevelSet() {
-		switch (BlockEventSeparator.getClientSeparationMode()) {
+		switch (BlockEventSeparatorMod.getClientSeparationMode()) {
 		case DEPTH:
 			animationOffset_bes = BlockEventCounters.subticks;
 			break;
@@ -103,7 +107,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 			animationOffset_bes = BlockEventCounters.subticks;
 			break;
 		case BLOCK:
-			animationOffset_bes = BlockEventCounters.movingBlocks++ * BlockEventSeparator.getClientSeparationInterval();
+			animationOffset_bes = BlockEventCounters.movingBlocks++ * BlockEventSeparatorMod.getClientSeparationInterval();
 			break;
 		default:
 			animationOffset_bes = 0;
@@ -121,7 +125,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 	}
 
 	private float adjustProgress_bes(float p) {
-		if (BlockEventSeparator.getAnimationMode() == AnimationMode.FIXED_SPEED) {
+		if (BlockEventSeparatorMod.getAnimationMode() == AnimationMode.FIXED_SPEED) {
 			return (progress == 0.0F && BlockEventCounters.subticks < animationOffset_bes) ? 0.0F : p;
 		} else {
 			return p < startProgress_bes ? 0.0F : (p - startProgress_bes) / (1.0F - startProgress_bes);

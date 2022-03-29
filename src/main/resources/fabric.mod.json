@@ -22,6 +22,9 @@
 
 	"environment": "*",
 	"entrypoints": {
+		"main": [
+			"block.event.separator.BlockEventSeparatorMod"
+		],
 		"g4mespeed": [
 			"block.event.separator.g4mespeed.BlockEventSeparatorExtension"
 		]
