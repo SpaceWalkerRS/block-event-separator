@@ -11,9 +11,9 @@
 		"common.ServerLevelMixin"
 	],
 	"client": [
-		"client.ClientLevelMixin",
 		"client.ClientPacketListenerMixin",
 		"client.IntegratedServerMixin",
+		"client.LevelMixin",
 		"client.MinecraftMixin",
 		"client.PistonMovingBlockEntityMixin"
 	],
