@@ -94,7 +94,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		)
 	)
 	private void adjustNextTickTime(CallbackInfo ci) {
-		if (isPaused() || frozen_bes) {
+		if (frozen_bes || isPaused()) {
 			return;
 		}
 
