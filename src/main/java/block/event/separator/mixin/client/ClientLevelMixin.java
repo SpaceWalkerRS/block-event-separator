@@ -3,11 +3,7 @@ package block.event.separator.mixin.client;
 import java.util.function.Supplier;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.BlockEventCounters;
 import block.event.separator.interfaces.mixin.IClientLevel;
 import block.event.separator.interfaces.mixin.IPistonMovingBlockEntity;
 
@@ -29,19 +25,6 @@ public abstract class ClientLevelMixin extends Level implements IClientLevel {
 
 	private ClientLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
 		super(data, dimension, holder, supplier, isClient, isDebug, seed);
-	}
-
-	@Inject(
-		method = "tickEntities",
-		cancellable = true,
-		at = @At(
-			value = "HEAD"
-		)
-	)
-	private void cancelTick(CallbackInfo ci) {
-		if (BlockEventCounters.frozen) {
-			ci.cancel();
-		}
 	}
 
 	@Override
