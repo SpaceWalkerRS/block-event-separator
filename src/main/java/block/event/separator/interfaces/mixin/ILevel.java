@@ -1,6 +1,6 @@
 package block.event.separator.interfaces.mixin;
 
-public interface IClientLevel {
+public interface ILevel {
 
 	public void tickMovingBlocks_bes();
 

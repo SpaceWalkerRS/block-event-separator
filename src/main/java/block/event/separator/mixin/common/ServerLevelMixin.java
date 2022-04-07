@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
-import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparatorMod;
+import block.event.separator.Counters;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 
@@ -56,10 +56,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void preBlockEvents(CallbackInfo ci) {
-		BlockEventCounters.currentDepth = 0;
-		BlockEventCounters.currentBatch = blockEvents.size();
-		BlockEventCounters.total = 0;
-		BlockEventCounters.movingBlocksTotal = 0;
+		Counters.currentDepth = 0;
+		Counters.currentBatch = blockEvents.size();
+		Counters.total = 0;
+		Counters.movingBlocksTotal = 0;
 	}
 
 	@Inject(
@@ -73,14 +73,14 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void onNextBlockEvent(CallbackInfo ci) {
 		if (!blockEvents.isEmpty()) {
-			if (BlockEventCounters.currentBatch == 0) {
-				BlockEventCounters.currentDepth++;
-				BlockEventCounters.currentBatch = blockEvents.size();
+			if (Counters.currentBatch == 0) {
+				Counters.currentDepth++;
+				Counters.currentBatch = blockEvents.size();
 
 				ignoreLastBatch_bes = true;
 			}
 
-			BlockEventCounters.currentBatch--;
+			Counters.currentBatch--;
 		}
 	}
 
@@ -92,7 +92,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void postBlockEvents(CallbackInfo ci) {
 		if (ignoreLastBatch_bes) {
-			BlockEventCounters.currentDepth--;
+			Counters.currentDepth--;
 		}
 
 		((IMinecraftServer)server).postBlockEvents_bes();
@@ -105,7 +105,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void onBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
-		BlockEventCounters.movingBlocksThisEvent = 0;
+		Counters.movingBlocksThisEvent = 0;
 	}
 
 	@Inject(
@@ -119,13 +119,13 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		if (cir.getReturnValue()) {
 			// G4mespeed Capture & Playback can do multiple block events
 			// per cycle, in which case we have to adjust our depth value.
-			BlockEventCounters.currentDepth = Math.max(BlockEventCounters.currentDepth, gcp_microtick);
-			BlockEventCounters.total++;
+			Counters.currentDepth = Math.max(Counters.currentDepth, gcp_microtick);
+			Counters.total++;
 
 			int offset = switch (BlockEventSeparatorMod.getServerSeparationMode()) {
-				case DEPTH -> BlockEventCounters.currentDepth;
-				case INDEX -> BlockEventCounters.total - 1;
-				case BLOCK -> BlockEventCounters.movingBlocksTotal - BlockEventCounters.movingBlocksThisEvent;
+				case DEPTH -> Counters.currentDepth;
+				case INDEX -> Counters.total - 1;
+				case BLOCK -> Counters.movingBlocksTotal - Counters.movingBlocksThisEvent;
 				default    -> 0;
 			};
 
