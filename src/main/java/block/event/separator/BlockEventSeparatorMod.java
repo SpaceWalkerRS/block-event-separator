@@ -1,23 +1,26 @@
 package block.event.separator;
 
+import java.io.File;
 import java.lang.reflect.Field;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.client.Minecraft;
 
 public class BlockEventSeparatorMod implements ModInitializer {
 
 	public static final String MOD_ID = "block-event-separator";
 	public static final String MOD_NAME = "Block Event Separator";
-	public static final String MOD_VERSION = "1.2.0";
+	public static final String MOD_VERSION = "1.2.1";
 	public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
 	public static SeparationMode serverSeparationMode = SeparationMode.OFF;
 	public static SeparationMode clientSeparationMode = SeparationMode.OFF;
 	public static int serverSeparationInterval = 1;
 	public static int clientSeparationInterval = 1;
+	public static AnimationMode animationMode = AnimationMode.DEFAULT;
 
 	private static Field process_entities;
 
@@ -45,5 +48,9 @@ public class BlockEventSeparatorMod implements ModInitializer {
 		}
 
 		return false;
+	}
+
+	public static File getConfigFolder(Minecraft minecraft) {
+		return new File(minecraft.gameDirectory, "config/" + MOD_ID);
 	}
 }

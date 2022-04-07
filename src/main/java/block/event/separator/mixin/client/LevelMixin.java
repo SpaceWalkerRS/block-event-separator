@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.BlockEventCounters;
+import block.event.separator.Counters;
 
 import net.minecraft.world.level.Level;
 
@@ -23,7 +23,7 @@ public class LevelMixin {
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {
-		if (isClientSide() && BlockEventCounters.frozen) {
+		if (isClientSide() && Counters.frozen) {
 			ci.cancel();
 		}
 	}

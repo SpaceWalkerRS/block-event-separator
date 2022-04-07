@@ -21,9 +21,9 @@ import net.minecraft.world.level.block.state.BlockState;
 	// try to make sure it is applied last.
 	priority = Integer.MAX_VALUE
 )
-public abstract class PistonHeadRendererMixin {
+public class PistonHeadRendererMixin {
 
-	@Shadow protected abstract boolean renderBlock(BlockPos blockPos, BlockState blockState, BufferBuilder bufferBuilder, Level level, boolean bl);
+	@Shadow protected boolean renderBlock(BlockPos blockPos, BlockState blockState, BufferBuilder bufferBuilder, Level level, boolean bl) { return false; };
 
 	@Redirect(
 		method = "render",

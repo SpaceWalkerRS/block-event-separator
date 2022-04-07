@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
-import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparatorMod;
+import block.event.separator.Counters;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 
@@ -55,10 +55,10 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void preBlockEvents(CallbackInfo ci) {
-		BlockEventCounters.currentDepth = 0;
-		BlockEventCounters.currentBatch = blockEvents.size();
-		BlockEventCounters.total = 0;
-		BlockEventCounters.movingBlocksTotal = 0;
+		Counters.currentDepth = 0;
+		Counters.currentBatch = blockEvents.size();
+		Counters.total = 0;
+		Counters.movingBlocksTotal = 0;
 	}
 
 	@Inject(
@@ -72,14 +72,14 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void onNextBlockEvent(CallbackInfo ci) {
 		if (!blockEvents.isEmpty()) {
-			if (BlockEventCounters.currentBatch == 0) {
-				BlockEventCounters.currentDepth++;
-				BlockEventCounters.currentBatch = blockEvents.size();
+			if (Counters.currentBatch == 0) {
+				Counters.currentDepth++;
+				Counters.currentBatch = blockEvents.size();
 
 				ignoreLastBatch_bes = true;
 			}
 
-			BlockEventCounters.currentBatch--;
+			Counters.currentBatch--;
 		}
 	}
 
@@ -91,7 +91,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void postBlockEvents(CallbackInfo ci) {
 		if (ignoreLastBatch_bes) {
-			BlockEventCounters.currentDepth--;
+			Counters.currentDepth--;
 		}
 
 		((IMinecraftServer)server).postBlockEvents_bes();
@@ -104,7 +104,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		)
 	)
 	private void onBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
-		BlockEventCounters.movingBlocksThisEvent = 0;
+		Counters.movingBlocksThisEvent = 0;
 	}
 
 	@Inject(
@@ -116,18 +116,18 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	)
 	private void onSuccessfulBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
 		if (cir.getReturnValue()) {
-			BlockEventCounters.total++;
+			Counters.total++;
 
 			int offset;
 			switch (BlockEventSeparatorMod.serverSeparationMode) {
 			case DEPTH:
-				offset = BlockEventCounters.currentDepth;
+				offset = Counters.currentDepth;
 				break;
 			case INDEX:
-				offset = BlockEventCounters.total - 1;
+				offset = Counters.total - 1;
 				break;
 			case BLOCK:
-				offset = BlockEventCounters.movingBlocksTotal - BlockEventCounters.movingBlocksThisEvent;
+				offset = Counters.movingBlocksTotal - Counters.movingBlocksThisEvent;
 				break;
 			default:
 				offset = 0;

@@ -42,6 +42,11 @@ public class ClientPacketListenerMixin {
 			FriendlyByteBuf buffer = packet.getData();
 
 			switch (path) {
+			case "freeze":
+				boolean frozen = buffer.readBoolean();
+				((IMinecraft)minecraft).setFrozen_bes(frozen);
+
+				break;
 			case "next_tick":
 				int maxOffset = buffer.readInt();
 				int interval = buffer.readInt();

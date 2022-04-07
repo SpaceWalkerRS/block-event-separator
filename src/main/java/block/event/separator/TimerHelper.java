@@ -14,10 +14,10 @@ public class TimerHelper {
 	}
 
 	public static float adjustPartialTick(float partialTick) {
-		float subTicks = BlockEventCounters.subticks;
-		float range = BlockEventCounters.subticksTarget + 1;
+		float subticks = Counters.subticks;
+		float range = Counters.subticksTarget + 1;
 
-		return (subTicks + partialTick) / range;
+		return (subticks + partialTick) / range;
 	}
 
 	public static void savePartialTick() {
