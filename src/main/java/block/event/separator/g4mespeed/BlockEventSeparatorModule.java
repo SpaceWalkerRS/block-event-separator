@@ -16,6 +16,11 @@ import block.event.separator.AnimationMode;
 import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.SeparationMode;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+
 public class BlockEventSeparatorModule implements GSIModule {
 
 	public static final String KEY_CATEGORY = "blockeventseparator";
@@ -151,6 +156,16 @@ public class BlockEventSeparatorModule implements GSIModule {
 			}
 
 			cAnimationMode.setValue(nextValue);
+
+			Minecraft minecraft = Minecraft.getInstance();
+			LocalPlayer player = minecraft.player;
+
+			if (player != null) {
+				AnimationMode mode = BlockEventSeparatorMod.getAnimationMode();
+
+				Component text = new TextComponent("Set animation mode to " + mode.name);
+				player.displayClientMessage(text, true);
+			}
 		}, GSEKeyEventType.PRESS);
 	}
 

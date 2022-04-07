@@ -26,6 +26,8 @@ public abstract class ClientLevelMixin extends Level implements IClientLevel {
 
 	@Override
 	public void tickMovingBlocks_bes() {
+		updatingBlockEntities = true;
+
 		for (int i = 0; i < tickableBlockEntities.size(); i++) {
 			BlockEntity blockEntity = tickableBlockEntities.get(i);
 
@@ -45,7 +47,9 @@ public abstract class ClientLevelMixin extends Level implements IClientLevel {
 				continue;
 			}
 
-			((IPistonMovingBlockEntity)blockEntity).extraTick_bes();
+			((IPistonMovingBlockEntity)blockEntity).animationTick_bes();
 		}
+
+		updatingBlockEntities = false;
 	}
 }

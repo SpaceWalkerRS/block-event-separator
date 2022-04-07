@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 	// try to make sure it is applied last.
 	priority = Integer.MAX_VALUE
 )
-public abstract class PistonHeadRendererMixin {
+public class PistonHeadRendererMixin {
 
 	@Redirect(
 		method = "render",
