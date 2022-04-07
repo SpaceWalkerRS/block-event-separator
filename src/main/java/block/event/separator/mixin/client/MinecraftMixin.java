@@ -8,8 +8,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import block.event.separator.BlockEventCounters;
+import block.event.separator.AnimationMode;
+import block.event.separator.BlockEventSeparatorMod;
+import block.event.separator.Counters;
+import block.event.separator.KeyMappings;
 import block.event.separator.TimerHelper;
+import block.event.separator.interfaces.mixin.ILevel;
 import block.event.separator.interfaces.mixin.IMinecraft;
 import block.event.separator.utils.MathUtils;
 
@@ -17,6 +21,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Timer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin implements IMinecraft {
@@ -24,6 +31,7 @@ public class MinecraftMixin implements IMinecraft {
 	@Shadow private Timer timer;
 	@Shadow private MultiPlayerGameMode gameMode;
 	@Shadow private ClientLevel level;
+	@Shadow private LocalPlayer player;
 	@Shadow private boolean pause;
 	@Shadow private float pausePartialTick;
 
@@ -60,10 +68,10 @@ public class MinecraftMixin implements IMinecraft {
 	)
 	private void preTick(boolean isRunning, CallbackInfo ci, long time, int ticksThisFrame) {
 		if (!pause && !serverFrozen_bes) {
-			BlockEventCounters.subticks += ticksThisFrame;
+			Counters.subticks += ticksThisFrame;
 			ticksThisFrame_bes = 0;
 
-			while (BlockEventCounters.subticks > BlockEventCounters.subticksTarget) {
+			while (Counters.subticks > Counters.subticksTarget) {
 				// If the client is ahead of the server, animation could speed up
 				// for several frames before being corrected. To prevent some
 				// instances of this, the next subticks target is estimated upon
@@ -74,10 +82,11 @@ public class MinecraftMixin implements IMinecraft {
 
 				estimateNextTarget_bes = true;
 
-				BlockEventCounters.subticks -= (1 + BlockEventCounters.subticksTarget);
-				BlockEventCounters.subticksTarget = nextSubticksTarget_bes;
+				Counters.subticks -= (1 + Counters.subticksTarget);
+				Counters.subticksTarget = nextSubticksTarget_bes;
 				nextSubticksTarget_bes = -1;
 
+				Counters.ticks++;
 				ticksThisFrame_bes++;
 			}
 		}
@@ -94,7 +103,7 @@ public class MinecraftMixin implements IMinecraft {
 	private void savePartialTick(boolean isRunning, CallbackInfo ci) {
 		TimerHelper.savePartialTick();
 
-		if (BlockEventCounters.frozen) {
+		if (Counters.frozen) {
 			timer.partialTick = pausePartialTick;
 		}
 	}
@@ -118,7 +127,7 @@ public class MinecraftMixin implements IMinecraft {
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {
-		BlockEventCounters.frozen = (ticksThisFrame_bes == 0) && serverFrozen_bes;
+		Counters.frozen = (ticksThisFrame_bes == 0) && serverFrozen_bes;
 
 		if (ticksThisFrame_bes > 0) {
 			ticksThisFrame_bes--;
@@ -126,9 +135,45 @@ public class MinecraftMixin implements IMinecraft {
 			if (!pause && level != null) {
 				// keep packet handling going
 				gameMode.tick();
+
+				tickFixedSpeed_bes();
 			}
 
 			ci.cancel();
+		}
+	}
+
+	@Inject(
+		method = "tick",
+		at = @At(
+			value = "TAIL"
+		)
+	)
+	private void tickFixedSpeed(CallbackInfo ci) {
+		if (!pause && !serverFrozen_bes && level != null) {
+			tickFixedSpeed_bes();
+		}
+	}
+
+	@Inject(
+		method = "handleKeybinds",
+		at = @At(
+			value = "RETURN"
+		)
+	)
+	private void handleKeyMappings(CallbackInfo ci) {
+		while (KeyMappings.TOGGLE_ANIMATION_MODE.consumeClick()) {
+			int nextIndex = BlockEventSeparatorMod.animationMode.index + 1;
+
+			if (nextIndex >= AnimationMode.getCount()) {
+				nextIndex = 0;
+			}
+
+			AnimationMode mode = AnimationMode.fromIndex(nextIndex);
+			BlockEventSeparatorMod.animationMode = mode;
+
+			Component text = new TextComponent("Set animation mode to " + mode.name);
+			player.displayClientMessage(text, true);
 		}
 	}
 
@@ -145,7 +190,7 @@ public class MinecraftMixin implements IMinecraft {
 			timer.partialTick = TimerHelper.freezePartialTick;
 		}
 
-		BlockEventCounters.frozen = serverFrozen_bes;
+		Counters.frozen = serverFrozen_bes;
 	}
 
 	@Override
@@ -157,16 +202,22 @@ public class MinecraftMixin implements IMinecraft {
 		int subticksTarget = interval * MathUtils.max(prevPrevMaxOffset_bes, prevMaxOffset_bes, maxOffset_bes);
 
 		if (nextSubticksTarget_bes < 0) {
-			BlockEventCounters.subticksTarget = subticksTarget;
+			Counters.subticksTarget = subticksTarget;
 			nextSubticksTarget_bes = 0;
 		} else {
 			estimateNextTarget_bes = false;
 
 			// Make sure any queued subticks do not go lost...
-			BlockEventCounters.subticksTarget += nextSubticksTarget_bes;
+			Counters.subticksTarget += nextSubticksTarget_bes;
 			nextSubticksTarget_bes = subticksTarget;
 		}
 
-		BlockEventCounters.movingBlocks = 0;
+		Counters.movingBlocks = 0;
+	}
+
+	private void tickFixedSpeed_bes() {
+		if (BlockEventSeparatorMod.animationMode == AnimationMode.FIXED_SPEED) {
+			((ILevel)level).tickMovingBlocks_bes();
+		}
 	}
 }

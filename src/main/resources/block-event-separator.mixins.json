@@ -12,9 +12,11 @@
 	],
 	"client": [
 		"client.ClientPacketListenerMixin",
+		"client.KeyMappingMixin",
 		"client.IntegratedServerMixin",
 		"client.LevelMixin",
 		"client.MinecraftMixin",
+		"client.OptionsMixin",
 		"client.PistonMovingBlockEntityMixin"
 	],
 	"injectors": {
