@@ -22,9 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 	// try to make sure it is applied last.
 	priority = Integer.MAX_VALUE
 )
-public abstract class PistonHeadRendererMixin {
+public class PistonHeadRendererMixin {
 
-	@Shadow protected abstract void renderBlock(BlockPos pos, BlockState state, PoseStack poseStack, MultiBufferSource multiBufferSource, Level level, boolean bl, int i);
+	@Shadow protected void renderBlock(BlockPos pos, BlockState state, PoseStack poseStack, MultiBufferSource multiBufferSource, Level level, boolean bl, int i) { };
 
 	@Redirect(
 		method = "render",

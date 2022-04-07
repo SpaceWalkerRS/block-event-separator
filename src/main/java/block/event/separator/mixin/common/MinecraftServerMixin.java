@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.BlockEventCounters;
 import block.event.separator.BlockEventSeparatorMod;
+import block.event.separator.Counters;
 import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
@@ -140,9 +140,9 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 	@Override
 	public void postBlockEvents_bes() {
-		maxBlockEventDepth_bes = Math.max(maxBlockEventDepth_bes, BlockEventCounters.currentDepth);
-		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, BlockEventCounters.total);
-		maxMovingBlocksTotal_bes = Math.max(maxMovingBlocksTotal_bes, BlockEventCounters.movingBlocksTotal);
+		maxBlockEventDepth_bes = Math.max(maxBlockEventDepth_bes, Counters.currentDepth);
+		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, Counters.total);
+		maxMovingBlocksTotal_bes = Math.max(maxMovingBlocksTotal_bes, Counters.movingBlocksTotal);
 	}
 
 	private void syncFreeze_bes() {
