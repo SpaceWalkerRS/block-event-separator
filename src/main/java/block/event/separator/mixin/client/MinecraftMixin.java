@@ -87,6 +87,8 @@ public class MinecraftMixin implements IMinecraft {
 				Counters.ticks++;
 				ticksThisFrame_bes++;
 			}
+		} else {
+			ticksThisFrame_bes = timer.ticks;
 		}
 	}
 
@@ -125,8 +127,6 @@ public class MinecraftMixin implements IMinecraft {
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {
-		Counters.frozen = (ticksThisFrame_bes == 0) && serverFrozen_bes;
-
 		if (ticksThisFrame_bes > 0) {
 			ticksThisFrame_bes--;
 		} else if (!serverFrozen_bes) {
