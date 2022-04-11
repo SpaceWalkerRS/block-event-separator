@@ -1,28 +1,46 @@
 package block.event.separator.command;
 
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import java.util.Collections;
+import java.util.List;
 
 import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.SeparationMode;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.HoverEvent;
 
-public class BlockEventSeparatorCommand {
+public class BlockEventSeparatorCommand extends CommandBase {
+
+	private static final String COMMAND_NAME = "blockeventseparator";
+
+	private static final String USAGE_MODE_QUERY     = singleUsage("mode");
+	private static final String USAGE_MODE_SET       = singleUsage("mode <new mode>");
+	private static final String USAGE_MODE           = buildUsage(USAGE_MODE_QUERY, USAGE_MODE_SET);
+
+	private static final String USAGE_INTERVAL_QUERY = singleUsage("interval");
+	private static final String USAGE_INTERVAL_SET   = singleUsage("interval <new interval>");
+	private static final String USAGE_INTERVAL       = buildUsage(USAGE_INTERVAL_QUERY, USAGE_INTERVAL_SET);
+
+	private static final String TOTAL_USAGE          = buildUsage(USAGE_MODE, USAGE_INTERVAL);
+
+	private static String singleUsage(String usage) {
+		return String.format("/%s %s", COMMAND_NAME, usage);
+	}
+
+	private static String buildUsage(String... usages) {
+		return String.join(" OR ", usages);
+	}
 
 	private static final String[] MODES;
-	private static final SimpleCommandExceptionType ERROR_INVALID_NAME = new SimpleCommandExceptionType(new TextComponent("That is not a valid mode!"));
 
 	static {
 
@@ -35,93 +53,126 @@ public class BlockEventSeparatorCommand {
 		}
 	}
 
-	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-		LiteralArgumentBuilder<CommandSourceStack> builder = Commands.
-			literal("blockeventseparator").
-			requires(source -> source.hasPermission(2)).
-			executes(context -> queryMode(context.getSource())).
-			then(Commands.
-				literal("mode").
-				executes(context -> queryMode(context.getSource())).
-				then(Commands.
-					argument("new mode", StringArgumentType.word()).
-					suggests((context, suggestionsBuilder) -> SharedSuggestionProvider.suggest(MODES, suggestionsBuilder)).
-					executes(context -> setMode(context.getSource(), StringArgumentType.getString(context, "new mode"))))).
-			then(Commands.
-				literal("interval").
-				executes(context -> queryInterval(context.getSource())).
-				then(Commands.
-					argument("new interval", IntegerArgumentType.integer(1, 64)).
-					executes(context -> setInterval(context.getSource(), IntegerArgumentType.getInteger(context, "new interval")))));
+	public BlockEventSeparatorCommand() {
 
-		dispatcher.register(builder);
 	}
 
-	private static int queryMode(CommandSourceStack source) {
-		SeparationMode mode = BlockEventSeparatorMod.serverSeparationMode;
-		Component text;
+	@Override
+	public String getName() {
+		return COMMAND_NAME;
+	}
 
-		if (mode == SeparationMode.OFF) {
-			text = new TextComponent("Block event separation is currently disabled");
-		} else {
-			text = new TextComponent("").
-				append("Block event separation is currently running in [").
-				append(new TextComponent(mode.name).withStyle(style -> style.
-					setColor(ChatFormatting.GREEN).
-					setHoverEvent(new HoverEvent(
-						HoverEvent.Action.SHOW_TEXT,
-						new TextComponent(mode.description))))).
-				append("] mode");
+	@Override
+	public String getUsage(ICommandSender sender) {
+		return TOTAL_USAGE;
+	}
+
+	@Override
+	public List<String> getTabCompletions(MinecraftServer minecraftServer, ICommandSender sender, String[] args, BlockPos pos) {
+		switch (args.length) {
+		case 1:
+			return getListOfStringsMatchingLastWord(args, "mode", "interval");
+		case 2:
+			switch (args[0]) {
+			case "mode":
+				return getListOfStringsMatchingLastWord(args, MODES);
+			case "interval":
+				return getListOfStringsMatchingLastWord(args, "1");
+			}
 		}
 
-		source.sendSuccess(text, false);
-
-		return Command.SINGLE_SUCCESS;
+		return Collections.emptyList();
 	}
 
-	private static int setMode(CommandSourceStack source, String name) throws CommandSyntaxException {
+	@Override
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+		if (args.length > 0) {
+			switch (args[0]) {
+			case "mode":
+				switch (args.length) {
+				case 1:
+					queryMode(sender);
+					return;
+				case 2:
+					setMode(sender, args[1]);
+					return;
+				}
+
+				throw new WrongUsageException(USAGE_MODE);
+			case "interval":
+				switch (args.length) {
+				case 1:
+					queryInterval(sender);
+					return;
+				case 2:
+					setInterval(sender, parseInt(args[1], 1));
+					return;
+				}
+
+				throw new WrongUsageException(USAGE_INTERVAL);
+			}
+		}
+
+		throw new WrongUsageException(getUsage(sender));
+	}
+
+	private void queryMode(ICommandSender sender) {
+		SeparationMode mode = BlockEventSeparatorMod.serverSeparationMode;
+		ITextComponent text;
+
+		if (mode == SeparationMode.OFF) {
+			text = new TextComponentString("Block event separation is currently disabled");
+		} else {
+			text = new TextComponentString("").
+				appendText("Block event separation is currently running in [").
+				appendSibling(new TextComponentString(mode.name).setStyle(new Style().
+					setColor(TextFormatting.GREEN).
+					setHoverEvent(new HoverEvent(
+						HoverEvent.Action.SHOW_TEXT,
+						new TextComponentString(mode.description))))).
+				appendText("] mode");
+		}
+
+		sender.sendMessage(text);
+	}
+
+	private void setMode(ICommandSender sender, String name) throws WrongUsageException {
 		SeparationMode mode = SeparationMode.fromName(name);
 
 		if (mode == null) {
-			throw ERROR_INVALID_NAME.create();
+			throw new WrongUsageException(USAGE_MODE_SET);
 		}
 
 		BlockEventSeparatorMod.serverSeparationMode = mode;
-		Component text;
+		ITextComponent text;
 
 		if (mode == SeparationMode.OFF) {
-			text = new TextComponent("Disabled block event separation");
+			text = new TextComponentString("Disabled block event separation");
 		} else {
-			text = new TextComponent("").
-				append("Enabled block event separation in [").
-				append(new TextComponent(mode.name).withStyle(style -> style.
-					setColor(ChatFormatting.GREEN).
+			text = new TextComponentString("").
+				appendText("Enabled block event separation in [").
+				appendSibling(new TextComponentString(mode.name).setStyle(new Style().
+					setColor(TextFormatting.GREEN).
 					setHoverEvent(new HoverEvent(
 						HoverEvent.Action.SHOW_TEXT,
-						new TextComponent(mode.description))))).
-				append("] mode");
+						new TextComponentString(mode.description))))).
+				appendText("] mode");
 		}
 
-		source.sendSuccess(text, true);
-
-		return Command.SINGLE_SUCCESS;
+		notifyCommandListener(sender, this, text.getFormattedText());
 	}
 
-	private static int queryInterval(CommandSourceStack source) {
+	private void queryInterval(ICommandSender sender) {
 		int interval = BlockEventSeparatorMod.serverSeparationInterval;
 
-		Component text = new TextComponent(String.format("The separation interval is currently set to %s", interval));
-		source.sendSuccess(text, false);
-
-		return Command.SINGLE_SUCCESS;
+		ITextComponent text = new TextComponentString(String.format("The separation interval is currently set to %s", interval));
+		sender.sendMessage(text);
 	}
 
-	private static int setInterval(CommandSourceStack source, int interval) {
+	private void setInterval(ICommandSender sender, int interval) {
 		BlockEventSeparatorMod.serverSeparationInterval = interval;
 
-		Component text = new TextComponent(String.format("Set the separation interval to %s", interval));
-		source.sendSuccess(text, true);
-
-		return Command.SINGLE_SUCCESS;
+		ITextComponent text = new TextComponentString(String.format("Set the separation interval to %s", interval));
+		notifyCommandListener(sender, this, text.getFormattedText());
 	}
 }

@@ -1,0 +1,26 @@
+{
+	"required": true,
+	"minVersion": "0.5.3",
+	"package": "block.event.separator.mixin",
+	"refmap": "mixins.block-event-separator-lite.refmap.json",
+	"mixins": [
+		"common.MinecraftServerMixin",
+		"common.ServerCommandManagerMixin",
+		"common.TileEntityMixin",
+		"common.TileEntityPistonMixin",
+		"common.WorldServerMixin"
+	],
+	"client": [
+		"client.GameSettingsMixin",
+		"client.IntegratedServerMixin",
+		"client.KeyBindingMixin",
+		"client.MinecraftMixin",
+		"client.NetHandlerPlayClientMixin",
+		"client.TileEntityPistonMixin",
+		"client.TileEntityPistonRendererMixin",
+		"client.WorldMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

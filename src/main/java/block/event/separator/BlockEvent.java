@@ -1,8 +1,8 @@
 package block.event.separator;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockEventData;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEventData;
+import net.minecraft.util.math.BlockPos;
 
 public class BlockEvent {
 
@@ -21,6 +21,6 @@ public class BlockEvent {
 	}
 
 	public static BlockEvent of(BlockEventData data, int animationOffset) {
-		return new BlockEvent(data.getPos(), data.getBlock(), data.getParamA(), data.getParamB(), animationOffset);
+		return new BlockEvent(data.getPosition(), data.getBlock(), data.getEventID(), data.getEventParameter(), animationOffset);
 	}
 }

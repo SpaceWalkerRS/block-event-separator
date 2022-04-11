@@ -1,6 +1,6 @@
 package block.event.separator;
 
-import net.minecraft.client.Timer;
+import net.minecraft.util.Timer;
 
 public class TimerHelper {
 
@@ -14,22 +14,22 @@ public class TimerHelper {
 	}
 
 	public static float adjustPartialTick(float partialTick) {
-		float subTicks = BlockEventCounters.subticks;
-		float range = BlockEventCounters.subticksTarget + 1;
+		float subticks = Counters.subticks;
+		float range = Counters.subticksTarget + 1;
 
-		return (subTicks + partialTick) / range;
+		return (subticks + partialTick) / range;
 	}
 
 	public static void savePartialTick() {
 		if (savedPartialTick < 0.0F) {
-			savedPartialTick = timer.partialTick;
-			timer.partialTick = adjustPartialTick(timer.partialTick);
+			savedPartialTick = timer.renderPartialTicks;
+			timer.renderPartialTicks = adjustPartialTick(timer.renderPartialTicks);
 		}
 	}
 
 	public static void loadPartialTick() {
 		if (savedPartialTick >= 0.0F) {
-			timer.partialTick = savedPartialTick;
+			timer.renderPartialTicks = savedPartialTick;
 			savedPartialTick = -1.0F;
 		}
 	}

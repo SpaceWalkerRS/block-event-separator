@@ -1,9 +1,10 @@
 package block.event.separator;
 
-public class BlockEventCounters {
+public class Counters {
 
 	// client-side
 	public static boolean frozen;
+	public static long ticks;
 	public static int subticks;
 	public static int subticksTarget;
 	public static int movingBlocks;

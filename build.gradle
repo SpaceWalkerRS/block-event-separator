@@ -1,60 +1,59 @@
-plugins {
-	id 'fabric-loom' version '0.7-SNAPSHOT'
-	id 'maven-publish'
-}
-
-repositories {
-    flatDir {
-        dirs "./vendor/g4mespeed"
-    }
-}
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-
-archivesBaseName = "${project.archives_base_name}-mc${project.minecraft_version}"
-version = project.mod_version
-group = project.maven_group
-
-repositories {
-}
-
-dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven {
+			name = "sonatype"
+			url = "https://oss.sonatype.org/content/repositories/snapshots/"
+		}
+		maven {
+			name = "forge"
+			url = "https://files.minecraftforge.net/maven"
+		}
+		maven {
+			name = 'sponge'
+			url = 'https://repo.spongepowered.org/maven'
+		}
+	}
+	dependencies {
+		classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+		classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
 	}
 }
 
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
+apply plugin: 'net.minecraftforge.gradle.liteloader'
+apply plugin: 'org.spongepowered.mixin'
+
+group = 'block-event-separator-lite'
+version = '1.2.0'
+archivesBaseName = "block-event-separator-lite"
+
+minecraft {
+	version = project.mcVersion
+	mappings = project.mcpMappings
+	runDir = "run"
+}
+
+sourceSets {
+	main {
+		// Refmap declaration must match the refmap name specified in the json config
+		ext.refMap = "mixins.block-event-separator-lite.refmap.json"
+	}
+}
+
+litemod {
+	json{
+		name = "block-event-separator-lite"
+		mcversion = project.mcVersion
+		description = "See the world one block event at a time."
+		mixinConfigs += "mixins.block-event-separator-lite.json"
+	}
+}
+
+mixin {
+	defaultObfuscationEnv notch
 }
 
 jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-	}
+	from litemod.outputs
 }
