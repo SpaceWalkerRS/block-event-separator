@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventSeparatorMod;
@@ -48,6 +48,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		super(data, dimension, chunkSource, profiler, isClient);
 	}
 
+	@Shadow private boolean doBlockEvent(BlockEventData data) { return false; }
+
 	@Inject(
 		method = "runBlockEvents",
 		at = @At(
@@ -83,39 +85,17 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		}
 	}
 
-	@Inject(
+	@Redirect(
 		method = "runBlockEvents",
 		at = @At(
-			value = "RETURN"
+			value = "INVOKE",
+			target = "Lnet/minecraft/server/level/ServerLevel;doBlockEvent(Lnet/minecraft/world/level/BlockEventData;)Z"
 		)
 	)
-	private void postBlockEvents(CallbackInfo ci) {
-		if (ignoreLastBatch_bes) {
-			Counters.currentDepth--;
-		}
-
-		((IMinecraftServer)server).postBlockEvents_bes();
-	}
-
-	@Inject(
-		method = "doBlockEvent",
-		at = @At(
-			value = "HEAD"
-		)
-	)
-	private void onBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
+	private boolean cancelBlockEventPacket(ServerLevel level, BlockEventData data) {
 		Counters.movingBlocksThisEvent = 0;
-	}
 
-	@Inject(
-		method = "doBlockEvent",
-		cancellable = true,
-		at = @At(
-			value = "RETURN"
-		)
-	)
-	private void onSuccessfulBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
-		if (cir.getReturnValue()) {
+		if (doBlockEvent(data)) {
 			Counters.total++;
 
 			int offset;
@@ -137,9 +117,23 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 			BlockEvent blockEvent = BlockEvent.of(data, offset);
 			successfulBlockEvents_bes.add(blockEvent);
-
-			cir.setReturnValue(false);
 		}
+
+		return false;
+	}
+
+	@Inject(
+		method = "runBlockEvents",
+		at = @At(
+			value = "RETURN"
+		)
+	)
+	private void postBlockEvents(CallbackInfo ci) {
+		if (ignoreLastBatch_bes) {
+			Counters.currentDepth--;
+		}
+
+		((IMinecraftServer)server).postBlockEvents_bes();
 	}
 
 	@Override
