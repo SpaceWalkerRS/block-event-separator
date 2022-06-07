@@ -1,7 +1,6 @@
 package block.event.separator;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.block.Block;
 
@@ -23,9 +22,5 @@ public class BlockEvent {
 
 	public static BlockEvent of(BlockEventData data, int animationOffset) {
 		return new BlockEvent(data.pos(), data.block(), data.paramA(), data.paramB(), animationOffset);
-	}
-
-	public static BlockEvent of(ClientboundBlockEventPacket packet, int animationOffset) {
-		return new BlockEvent(packet.getPos(), packet.getBlock(), packet.getB0(), packet.getB1(), animationOffset);
 	}
 }
