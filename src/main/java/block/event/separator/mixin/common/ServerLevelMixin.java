@@ -45,8 +45,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	private boolean ignoreLastBatch_bes;
 	private int gcp_microtick; // field from G4mespeed Capture & Playback
 
-	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> dimension, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean isClient, boolean isDebug, long seed) {
-		super(data, dimension, holder, supplier, isClient, isDebug, seed);
+	protected ServerLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l, int i) {
+		super(writableLevelData, resourceKey, holder, supplier, bl, bl2, l, i);
 	}
 
 	@Inject(

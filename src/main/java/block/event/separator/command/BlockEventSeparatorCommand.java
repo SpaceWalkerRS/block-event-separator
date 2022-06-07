@@ -17,12 +17,11 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
 
 public class BlockEventSeparatorCommand {
 
 	private static final String[] MODES;
-	private static final SimpleCommandExceptionType ERROR_INVALID_NAME = new SimpleCommandExceptionType(new TextComponent("That is not a valid mode!"));
+	private static final SimpleCommandExceptionType ERROR_INVALID_NAME = new SimpleCommandExceptionType(Component.literal("That is not a valid mode!"));
 
 	static {
 
@@ -62,15 +61,15 @@ public class BlockEventSeparatorCommand {
 		Component text;
 
 		if (mode == SeparationMode.OFF) {
-			text = new TextComponent("Block event separation is currently disabled");
+			text = Component.literal("Block event separation is currently disabled");
 		} else {
-			text = new TextComponent("").
+			text = Component.literal("").
 				append("Block event separation is currently running in [").
-				append(new TextComponent(mode.name).withStyle(style -> style.
+				append(Component.literal(mode.name).withStyle(style -> style.
 					applyFormat(ChatFormatting.GREEN).
 					withHoverEvent(new HoverEvent(
 						HoverEvent.Action.SHOW_TEXT,
-						new TextComponent(mode.description))))).
+						Component.literal(mode.description))))).
 				append("] mode");
 		}
 
@@ -90,15 +89,15 @@ public class BlockEventSeparatorCommand {
 		Component text;
 
 		if (mode == SeparationMode.OFF) {
-			text = new TextComponent("Disabled block event separation");
+			text = Component.literal("Disabled block event separation");
 		} else {
-			text = new TextComponent("").
+			text = Component.literal("").
 				append("Enabled block event separation in [").
-				append(new TextComponent(mode.name).withStyle(style -> style.
+				append(Component.literal(mode.name).withStyle(style -> style.
 					applyFormat(ChatFormatting.GREEN).
 					withHoverEvent(new HoverEvent(
 						HoverEvent.Action.SHOW_TEXT,
-						new TextComponent(mode.description))))).
+						Component.literal(mode.description))))).
 				append("] mode");
 		}
 
@@ -110,7 +109,7 @@ public class BlockEventSeparatorCommand {
 	private static int queryInterval(CommandSourceStack source) {
 		int interval = BlockEventSeparatorMod.getServerSeparationInterval();
 
-		Component text = new TextComponent(String.format("The separation interval is currently set to %s", interval));
+		Component text = Component.literal(String.format("The separation interval is currently set to %s", interval));
 		source.sendSuccess(text, false);
 
 		return Command.SINGLE_SUCCESS;
@@ -119,7 +118,7 @@ public class BlockEventSeparatorCommand {
 	private static int setInterval(CommandSourceStack source, int interval) {
 		BlockEventSeparatorMod.setServerSeparationInterval(interval);
 
-		Component text = new TextComponent(String.format("Set the separation interval to %s", interval));
+		Component text = Component.literal(String.format("Set the separation interval to %s", interval));
 		source.sendSuccess(text, true);
 
 		return Command.SINGLE_SUCCESS;

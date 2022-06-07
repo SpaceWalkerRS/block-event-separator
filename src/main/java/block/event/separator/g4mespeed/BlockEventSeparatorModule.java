@@ -19,7 +19,6 @@ import block.event.separator.SeparationMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 
 public class BlockEventSeparatorModule implements GSIModule {
 
@@ -163,7 +162,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 			if (player != null) {
 				AnimationMode mode = BlockEventSeparatorMod.getAnimationMode();
 
-				Component text = new TextComponent("Set animation mode to " + mode.name);
+				Component text = Component.literal("Set animation mode to " + mode.name);
 				player.displayClientMessage(text, true);
 			}
 		}, GSEKeyEventType.PRESS);
