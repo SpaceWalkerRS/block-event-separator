@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -26,7 +27,9 @@ import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -108,34 +111,32 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		Counters.movingBlocksThisEvent = 0;
 	}
 
-	@Inject(
-		method = "doBlockEvent",
-		cancellable = true,
+	@Redirect(
+		method = "runBlockEvents",
 		at = @At(
-			value = "RETURN"
+			value = "INVOKE",
+			target = "Lnet/minecraft/server/players/PlayerList;broadcast(Lnet/minecraft/world/entity/player/Player;DDDDLnet/minecraft/resources/ResourceKey;Lnet/minecraft/network/protocol/Packet;)V"
 		)
 	)
-	private void onSuccessfulBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
-		if (cir.getReturnValue()) {
-			// G4mespeed Capture & Playback can do multiple block events
-			// per cycle, in which case we have to adjust our depth value.
-			Counters.currentDepth = Math.max(Counters.currentDepth, gcp_microtick);
-			Counters.total++;
+	private void cancelBlockEventPacket(PlayerList playerList, Player player, double x, double y, double z, double range, ResourceKey<Level> dimension, Packet<?> packet) {
+		ClientboundBlockEventPacket blockEventPacket = (ClientboundBlockEventPacket)packet;
 
-			int offset = switch (BlockEventSeparatorMod.getServerSeparationMode()) {
-				case DEPTH -> Counters.currentDepth;
-				case INDEX -> Counters.total - 1;
-				case BLOCK -> Counters.movingBlocksTotal - Counters.movingBlocksThisEvent;
-				default    -> 0;
-			};
+		// G4mespeed Capture & Playback can do multiple block events
+		// per cycle, in which case we have to adjust our depth value.
+		Counters.currentDepth = Math.max(Counters.currentDepth, gcp_microtick);
+		Counters.total++;
 
-			ignoreLastBatch_bes = false;
+		int offset = switch (BlockEventSeparatorMod.getServerSeparationMode()) {
+			case DEPTH -> Counters.currentDepth;
+			case INDEX -> Counters.total - 1;
+			case BLOCK -> Counters.movingBlocksTotal - Counters.movingBlocksThisEvent;
+			default    -> 0;
+		};
 
-			BlockEvent blockEvent = BlockEvent.of(data, offset);
-			successfulBlockEvents_bes.add(blockEvent);
+		ignoreLastBatch_bes = false;
 
-			cir.setReturnValue(false);
-		}
+		BlockEvent blockEvent = BlockEvent.of(blockEventPacket, offset);
+		successfulBlockEvents_bes.add(blockEvent);
 	}
 
 	@Override
