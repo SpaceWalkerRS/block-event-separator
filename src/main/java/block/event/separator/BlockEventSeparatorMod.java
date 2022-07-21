@@ -16,6 +16,8 @@ public class BlockEventSeparatorMod implements ModInitializer {
 	public static final String MOD_VERSION = "1.2.2";
 	public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
+	public static boolean isConnectedToBesServer;
+
 	public static SeparationMode serverSeparationMode = SeparationMode.OFF;
 	public static SeparationMode clientSeparationMode = SeparationMode.OFF;
 	public static int serverSeparationInterval = 1;

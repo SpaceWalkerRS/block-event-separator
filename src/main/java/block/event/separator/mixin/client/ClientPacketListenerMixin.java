@@ -12,16 +12,44 @@ import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraft;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.game.ClientboundLoginPacket;
+import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
 import net.minecraft.resources.ResourceLocation;
 
 @Mixin(ClientPacketListener.class)
 public class ClientPacketListenerMixin {
 
 	@Shadow @Final private Minecraft minecraft;
+
+	@Shadow public void send(Packet<?> packet) { }
+
+	@Inject(
+		method = "handleLogin",
+		at = @At(
+			value = "RETURN"
+		)
+	)
+	private void onConnect(ClientboundLoginPacket loginPacket, CallbackInfo ci) {
+		String namespace = BlockEventSeparatorMod.MOD_ID;
+		String path = "handshake";
+		ResourceLocation id = new ResourceLocation(namespace, path);
+
+		ByteBuf buf = Unpooled.buffer();
+		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
+
+		buffer.writeUtf(BlockEventSeparatorMod.MOD_VERSION);
+
+		Packet<?> packet = new ServerboundCustomPayloadPacket(id, buffer);
+		send(packet);
+	}
 
 	@Inject(
 		method = "handleCustomPayload",
@@ -42,26 +70,31 @@ public class ClientPacketListenerMixin {
 			FriendlyByteBuf buffer = packet.getData();
 
 			switch (path) {
+			case "handshake":
+				String modVersion = buffer.readUtf();
+				((IMinecraft)minecraft).onHandshake_bes(modVersion);
+
+				break;
 			case "freeze":
-				boolean frozen = buffer.readBoolean();
-				((IMinecraft)minecraft).setFrozen_bes(frozen);
+				if (BlockEventSeparatorMod.isConnectedToBesServer) {
+					boolean frozen = buffer.readBoolean();
+					((IMinecraft)minecraft).setFrozen_bes(frozen);
+				}
 
 				break;
 			case "next_tick":
-				int maxOffset = buffer.readInt();
-				int interval = buffer.readInt();
-				int modeIndex = buffer.readByte();
-				SeparationMode mode = SeparationMode.fromIndex(modeIndex);
+				if (BlockEventSeparatorMod.isConnectedToBesServer) {
+					int maxOffset = buffer.readInt();
+					int interval = buffer.readInt();
+					int modeIndex = buffer.readByte();
+					SeparationMode mode = SeparationMode.fromIndex(modeIndex);
 
-				((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset, interval);
-				BlockEventSeparatorMod.clientSeparationInterval = interval;
-				BlockEventSeparatorMod.clientSeparationMode = mode;
+					((IMinecraft)minecraft).updateMaxOffset_bes(maxOffset, interval);
+					BlockEventSeparatorMod.clientSeparationInterval = interval;
+					BlockEventSeparatorMod.clientSeparationMode = mode;
+				}
 
 				break;
-			default:
-				BlockEventSeparatorMod.LOGGER.info("Ignoring packet with unknown id \'" + path + "\'");
-
-				return;
 			}
 
 			ci.cancel();

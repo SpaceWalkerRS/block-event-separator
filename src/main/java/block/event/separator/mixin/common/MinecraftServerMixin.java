@@ -1,5 +1,8 @@
 package block.event.separator.mixin.common;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,6 +28,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerConnectionListener;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.profiling.GameProfiler;
@@ -36,6 +40,8 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Shadow private int tickCount;
 	@Shadow private GameProfiler profiler;
 	@Shadow private PlayerList playerList;
+
+	private final Set<UUID> connectedPlayers = new HashSet<>();
 
 	private SeparationMode mode_bes;
 	private int separationInterval_bes;
@@ -139,10 +145,44 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	}
 
 	@Override
+	public void onPlayerJoin_bes(ServerPlayer player) {
+
+	}
+
+	@Override
+	public void onPlayerLeave_bes(ServerPlayer player) {
+		connectedPlayers.remove(player.getUUID());
+	}
+
+	@Override
 	public void postBlockEvents_bes() {
 		maxBlockEventDepth_bes = Math.max(maxBlockEventDepth_bes, Counters.currentDepth);
 		maxBlockEventTotal_bes = Math.max(maxBlockEventTotal_bes, Counters.total);
 		maxMovingBlocksTotal_bes = Math.max(maxMovingBlocksTotal_bes, Counters.movingBlocksTotal);
+	}
+
+	@Override
+	public void onHandshake_bes(ServerPlayer player, String modVersion) {
+		if (connectedPlayers.add(player.getUUID())) {
+			String namespace = BlockEventSeparatorMod.MOD_ID;
+			String path = "handshake";
+			ResourceLocation id = new ResourceLocation(namespace, path);
+
+			ByteBuf buf = Unpooled.buffer();
+			FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
+
+			buffer.writeUtf(BlockEventSeparatorMod.MOD_VERSION);
+
+			Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
+			player.connection.send(packet);
+
+			playerList.sendPlayerPermissionLevel(player);
+		}
+	}
+
+	@Override
+	public boolean isBesClient(ServerPlayer player) {
+		return connectedPlayers.contains(player.getUUID());
 	}
 
 	private void syncFreeze_bes() {
@@ -155,8 +195,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 		buffer.writeBoolean(frozen_bes);
 
-		Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
-		playerList.broadcastAll(packet);
+		send_bes(new ClientboundCustomPayloadPacket(id, buffer));
 	}
 
 	private void syncTime_bes() {
@@ -186,8 +225,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		buffer.writeInt(separationInterval_bes);
 		buffer.writeByte(mode_bes.index);
 
-		Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
-		playerList.broadcastAll(packet);
+		send_bes(new ClientboundCustomPayloadPacket(id, buffer));
 	}
 
 	private void syncBlockEvents_bes() {
@@ -195,6 +233,16 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 		for (ServerLevel level : getAllLevels()) {
 			((IServerLevel)level).sendBlockEvents_bes(offsetLimit);
+		}
+	}
+
+	private void send_bes(Packet<?> packet) {
+		for (UUID uuid : connectedPlayers) {
+			ServerPlayer player = playerList.getPlayer(uuid);
+
+			if (player != null) {
+				player.connection.send(packet);
+			}
 		}
 	}
 }

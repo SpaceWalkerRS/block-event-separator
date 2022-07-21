@@ -154,6 +154,16 @@ public class MinecraftMixin implements IMinecraft {
 	}
 
 	@Inject(
+		method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V",
+		at = @At(
+			value = "HEAD"
+		)
+	)
+	private void onDisconnect(CallbackInfo ci) {
+		BlockEventSeparatorMod.isConnectedToBesServer = false;
+	}
+
+	@Inject(
 		method = "handleKeybinds",
 		at = @At(
 			value = "RETURN"
@@ -173,6 +183,11 @@ public class MinecraftMixin implements IMinecraft {
 			Component text = new TextComponent("Set animation mode to " + mode.name);
 			player.displayClientMessage(text, true);
 		}
+	}
+
+	@Override
+	public void onHandshake_bes(String modVersion) {
+		BlockEventSeparatorMod.isConnectedToBesServer = true;
 	}
 
 	@Override
