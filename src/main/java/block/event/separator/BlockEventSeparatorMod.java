@@ -13,7 +13,7 @@ public class BlockEventSeparatorMod implements ModInitializer {
 
 	public static final String MOD_ID = "block-event-separator";
 	public static final String MOD_NAME = "Block Event Separator";
-	public static final String MOD_VERSION = "1.2.2";
+	public static final String MOD_VERSION = "1.3.0";
 	public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
 	public static boolean isConnectedToBesServer;
