@@ -8,6 +8,9 @@
 		"common.CommandsMixin",
 		"common.MinecraftServerMixin",
 		"common.PistonMovingBlockEntityMixin",
+		"common.PlayerListMixin",
+		"common.ServerboundCustomPayloadPacketMixin",
+		"common.ServerGamePacketListenerImplMixin",
 		"common.ServerLevelMixin"
 	],
 	"client": [
