@@ -26,6 +26,8 @@ public class BlockEventSeparatorMod implements ModInitializer {
 	/* Supplier for block event broadcast chunk distance */
 	public static Supplier<Integer> blockEventDistanceSupplier = Suppliers.ofInstance(4);
 
+	public static boolean isConnectedToBesServer;
+
 	private static SeparationMode serverSeparationMode = SeparationMode.OFF;
 	private static SeparationMode clientSeparationMode = SeparationMode.OFF;
 	private static int serverSeparationInterval = 1;
