@@ -177,6 +177,21 @@ public class MinecraftMixin implements IMinecraft {
 		}
 	}
 
+	@Inject(
+		method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V",
+		at = @At(
+			value = "HEAD"
+		)
+	)
+	private void onDisconnect(CallbackInfo ci) {
+		BlockEventSeparatorMod.isConnectedToBesServer = false;
+	}
+
+	@Override
+	public void onHandshake_bes(String modVersion) {
+		BlockEventSeparatorMod.isConnectedToBesServer = true;
+	}
+
 	@Override
 	public void setFrozen_bes(boolean frozen) {
 		boolean wasFrozen = serverFrozen_bes;

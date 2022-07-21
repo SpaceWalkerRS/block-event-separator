@@ -10,6 +10,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
 import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.SeparationMode;
+import block.event.separator.interfaces.mixin.IMinecraftServer;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,6 +19,8 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 public class BlockEventSeparatorCommand {
 
@@ -38,7 +41,7 @@ public class BlockEventSeparatorCommand {
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = Commands.
 			literal("blockeventseparator").
-			requires(source -> source.hasPermission(2)).
+			requires(source -> source.hasPermission(2) && isBesClient(source)).
 			executes(context -> queryMode(context.getSource())).
 			then(Commands.
 				literal("mode").
@@ -55,6 +58,19 @@ public class BlockEventSeparatorCommand {
 					executes(context -> setInterval(context.getSource(), IntegerArgumentType.getInteger(context, "new interval")))));
 
 		dispatcher.register(builder);
+	}
+
+	private static boolean isBesClient(CommandSourceStack source) {
+		try {
+			MinecraftServer server = source.getServer();
+			ServerPlayer player = source.getPlayerOrException();
+
+			return ((IMinecraftServer)server).isBesClient(player);
+		} catch (CommandSyntaxException e) {
+
+		}
+
+		return false;
 	}
 
 	private static int queryMode(CommandSourceStack source) {
