@@ -3,12 +3,6 @@ plugins {
 	id 'maven-publish'
 }
 
-repositories {
-    flatDir {
-        dirs "./vendor/g4mespeed"
-    }
-}
-
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -17,6 +11,9 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+	flatDir {
+		dirs "./vendor/g4mespeed"
+	}
 }
 
 dependencies {
