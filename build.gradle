@@ -11,8 +11,8 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-	flatDir {
-		dirs "./vendor/g4mespeed"
+	maven {
+		url "https://maven.g4mesoft.com/releases/"
 	}
 }
 
@@ -22,7 +22,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Implementation of the G4mespeed extension
-	modImplementation ":g4mespeed:${project.g4mespeed_version}"
+	modImplementation "com.g4mesoft:g4mespeed:${project.g4mespeed_version}"
 }
 
 processResources {
