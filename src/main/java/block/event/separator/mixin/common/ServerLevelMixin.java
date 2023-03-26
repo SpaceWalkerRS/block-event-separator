@@ -21,6 +21,7 @@ import block.event.separator.interfaces.mixin.IServerLevel;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.resources.ResourceKey;
@@ -45,8 +46,8 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	private boolean ignoreLastBatch_bes;
 	private int gcp_microtick; // field from G4mespeed Capture & Playback
 
-	protected ServerLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l, int i) {
-		super(writableLevelData, resourceKey, holder, supplier, bl, bl2, l, i);
+	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> resourceKey, RegistryAccess registries, Holder<DimensionType> dimensionType, Supplier<ProfilerFiller> profiler, boolean isClientSide, boolean isDebug, long seed, int maxChainedNeighborUpdates) {
+		super(data, resourceKey, registries, dimensionType, profiler, isClientSide, isDebug, seed, maxChainedNeighborUpdates);
 	}
 
 	@Shadow private boolean doBlockEvent(BlockEventData data) { return false; }
