@@ -51,6 +51,9 @@ public class LevelMixin implements ILevel {
 			TickingBlockEntity ticker = blockEntityTickers.get(i);
 
 			BlockPos pos = ticker.getPos();
+			if (pos == null) {
+				continue;
+			}
 			long l = ChunkPos.asLong(pos);
 
 			if (!shouldTickBlocksAt(l)) {
