@@ -68,22 +68,21 @@ public class BlockEventSeparatorCommand {
 
 	private static int queryMode(CommandSourceStack source) {
 		SeparationMode mode = BlockEventSeparatorMod.getServerSeparationMode();
-		Component text;
 
-		if (mode == SeparationMode.OFF) {
-			text = Component.literal("Block event separation is currently disabled");
-		} else {
-			text = Component.literal("").
-				append("Block event separation is currently running in [").
-				append(Component.literal(mode.name).withStyle(style -> style.
-					applyFormat(ChatFormatting.GREEN).
-					withHoverEvent(new HoverEvent(
-						HoverEvent.Action.SHOW_TEXT,
-						Component.literal(mode.description))))).
-				append("] mode");
-		}
-
-		source.sendSuccess(text, false);
+		source.sendSuccess(() -> {
+			if (mode == SeparationMode.OFF) {
+				return Component.literal("Block event separation is currently disabled");
+			} else {
+				return Component.literal("").
+					append("Block event separation is currently running in [").
+					append(Component.literal(mode.name).withStyle(style -> style.
+						applyFormat(ChatFormatting.GREEN).
+						withHoverEvent(new HoverEvent(
+							HoverEvent.Action.SHOW_TEXT,
+							Component.literal(mode.description))))).
+					append("] mode");
+			}
+		}, false);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -96,22 +95,21 @@ public class BlockEventSeparatorCommand {
 		}
 
 		BlockEventSeparatorMod.setServerSeparationMode(mode);
-		Component text;
 
-		if (mode == SeparationMode.OFF) {
-			text = Component.literal("Disabled block event separation");
-		} else {
-			text = Component.literal("").
-				append("Enabled block event separation in [").
-				append(Component.literal(mode.name).withStyle(style -> style.
-					applyFormat(ChatFormatting.GREEN).
-					withHoverEvent(new HoverEvent(
-						HoverEvent.Action.SHOW_TEXT,
-						Component.literal(mode.description))))).
-				append("] mode");
-		}
-
-		source.sendSuccess(text, true);
+		source.sendSuccess(() -> {
+			if (mode == SeparationMode.OFF) {
+				return Component.literal("Disabled block event separation");
+			} else {
+				return Component.literal("").
+					append("Enabled block event separation in [").
+					append(Component.literal(mode.name).withStyle(style -> style.
+						applyFormat(ChatFormatting.GREEN).
+						withHoverEvent(new HoverEvent(
+							HoverEvent.Action.SHOW_TEXT,
+							Component.literal(mode.description))))).
+					append("] mode");
+			}
+		}, true);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -119,8 +117,9 @@ public class BlockEventSeparatorCommand {
 	private static int queryInterval(CommandSourceStack source) {
 		int interval = BlockEventSeparatorMod.getServerSeparationInterval();
 
-		Component text = Component.literal(String.format("The separation interval is currently set to %s", interval));
-		source.sendSuccess(text, false);
+		source.sendSuccess(() -> {
+			return Component.literal(String.format("The separation interval is currently set to %s", interval));
+		}, false);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -128,8 +127,9 @@ public class BlockEventSeparatorCommand {
 	private static int setInterval(CommandSourceStack source, int interval) {
 		BlockEventSeparatorMod.setServerSeparationInterval(interval);
 
-		Component text = Component.literal(String.format("Set the separation interval to %s", interval));
-		source.sendSuccess(text, true);
+		source.sendSuccess(() -> {
+			return Component.literal(String.format("Set the separation interval to %s", interval));
+		}, true);
 
 		return Command.SINGLE_SUCCESS;
 	}

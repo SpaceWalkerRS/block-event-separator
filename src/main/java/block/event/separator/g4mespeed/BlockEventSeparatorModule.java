@@ -65,12 +65,12 @@ public class BlockEventSeparatorModule implements GSIModule {
 
 			// Disable incompatible settings.
 			tpsModule.sImmediateBlockBroadcast.setEnabledInGui(false);
-			tpsModule.sImmediateBlockBroadcast.setValue(false);
+			tpsModule.sImmediateBlockBroadcast.set(false);
 			tpsModule.sParanoidMode.setEnabledInGui(false);
-			tpsModule.sParanoidMode.setValue(false);
+			tpsModule.sParanoidMode.set(false);
 
 			// Register block event distance method
-			BlockEventSeparatorMod.blockEventDistanceSupplier = tpsModule.sBlockEventDistance::getValue;
+			BlockEventSeparatorMod.blockEventDistanceSupplier = tpsModule.sBlockEventDistance::get;
 
 			// Detect whenever the separation mode setting changed
 			serverManager.getSettingManager().addChangeListener(new GSISettingChangeListener() {
@@ -90,16 +90,16 @@ public class BlockEventSeparatorModule implements GSIModule {
 			BlockEventSeparatorMod.addServerSeparationModeListener(() -> {
 				SeparationMode mode = BlockEventSeparatorMod.getServerSeparationMode();
 
-				if (mode.index != sSeparationMode.getValue()) {
-					sSeparationMode.setValue(mode.index);
+				if (mode.index != sSeparationMode.get()) {
+					sSeparationMode.set(mode.index);
 				}
 			});
 			// Detect whenever the interval is changed via command
 			BlockEventSeparatorMod.addServerSeparationIntervalListener(() -> {
 				int interval = BlockEventSeparatorMod.getServerSeparationInterval();
 
-				if (interval != sSeparationInterval.getValue()) {
-					sSeparationInterval.setValue(interval);
+				if (interval != sSeparationInterval.get()) {
+					sSeparationInterval.set(interval);
 				}
 			});
 
@@ -110,7 +110,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 	}
 
 	private void onSeparationModeSettingChanged() {
-		SeparationMode mode = SeparationMode.fromIndex(sSeparationMode.getValue());
+		SeparationMode mode = SeparationMode.fromIndex(sSeparationMode.get());
 
 		if (mode != BlockEventSeparatorMod.getServerSeparationMode()) {
 			// Ensure that we do not get change listener loop.
@@ -119,7 +119,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 	}
 
 	private void onSeparationIntervalSettingChanged() {
-		int interval = sSeparationInterval.getValue();
+		int interval = sSeparationInterval.get();
 
 		if (interval != BlockEventSeparatorMod.getServerSeparationInterval()) {
 			// Ensure that we do not get change listener loop.
@@ -128,7 +128,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 	}
 
 	private void onAnimationModeSettingChanged() {
-		AnimationMode mode = AnimationMode.fromIndex(cAnimationMode.getValue());
+		AnimationMode mode = AnimationMode.fromIndex(cAnimationMode.get());
 
 		if (mode != BlockEventSeparatorMod.getAnimationMode()) {
 			// Ensure that we do not get change listener loop.
@@ -139,22 +139,22 @@ public class BlockEventSeparatorModule implements GSIModule {
 	@Override
 	public void registerHotkeys(GSKeyManager keyManager) {
 		keyManager.registerKey("toggleSeparationMode", KEY_CATEGORY, GSKeyCode.UNKNOWN_KEY, () -> {
-			int nextValue = sSeparationMode.getValue() + sSeparationMode.getInterval();
+			int nextValue = sSeparationMode.get() + sSeparationMode.getInterval();
 
-			if (nextValue > sSeparationMode.getMaxValue()) {
-				nextValue = sSeparationMode.getMinValue();
+			if (nextValue > sSeparationMode.getMin()) {
+				nextValue = sSeparationMode.getMin();
 			}
 
-			sSeparationMode.setValue(nextValue);
+			sSeparationMode.set(nextValue);
 		}, GSEKeyEventType.PRESS);
 		keyManager.registerKey("toggleAnimationMode", KEY_CATEGORY, GSKeyCode.UNKNOWN_KEY, () -> {
-			int nextValue = cAnimationMode.getValue() + cAnimationMode.getInterval();
+			int nextValue = cAnimationMode.get() + cAnimationMode.getInterval();
 
-			if (nextValue > cAnimationMode.getMaxValue()) {
-				nextValue = cAnimationMode.getMinValue();
+			if (nextValue > cAnimationMode.getMax()) {
+				nextValue = cAnimationMode.getMax();
 			}
 
-			cAnimationMode.setValue(nextValue);
+			cAnimationMode.set(nextValue);
 
 			Minecraft minecraft = Minecraft.getInstance();
 			LocalPlayer player = minecraft.player;
