@@ -16,16 +16,15 @@ import block.event.separator.Counters;
 import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
+import block.event.separator.network.BESPayload;
+import block.event.separator.network.FreezePayload;
+import block.event.separator.network.HandshakePayload;
+import block.event.separator.network.TickPayload;
 import block.event.separator.utils.MathUtils;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -157,17 +156,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Override
 	public void onHandshake_bes(ServerPlayer player, String modVersion) {
 		if (connectedPlayers.add(player.getUUID())) {
-			String namespace = BlockEventSeparatorMod.MOD_ID;
-			String path = "handshake";
-			ResourceLocation id = new ResourceLocation(namespace, path);
-
-			ByteBuf buf = Unpooled.buffer();
-			FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
-
-			buffer.writeUtf(BlockEventSeparatorMod.MOD_VERSION);
-
-			Packet<?> packet = new ClientboundCustomPayloadPacket(id, buffer);
-			player.connection.send(packet);
+			player.connection.send(new ClientboundCustomPayloadPacket(new HandshakePayload(BlockEventSeparatorMod.MOD_VERSION)));
 
 			playerList.sendPlayerPermissionLevel(player);
 		}
@@ -179,16 +168,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	}
 
 	private void syncFreeze_bes() {
-		String namespace = BlockEventSeparatorMod.MOD_ID;
-		String path = "freeze";
-		ResourceLocation id = new ResourceLocation(namespace, path);
-
-		ByteBuf buf = Unpooled.buffer();
-		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
-
-		buffer.writeBoolean(frozen_bes);
-
-		send_bes(new ClientboundCustomPayloadPacket(id, buffer));
+		send_bes(new FreezePayload(frozen_bes));
 	}
 
 	private void syncTime_bes() {
@@ -207,18 +187,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	}
 
 	private void syncNextTick_bes() {
-		String namespace = BlockEventSeparatorMod.MOD_ID;
-		String path = "next_tick";
-		ResourceLocation id = new ResourceLocation(namespace, path);
-
-		ByteBuf buf = Unpooled.buffer();
-		FriendlyByteBuf buffer = new FriendlyByteBuf(buf);
-
-		buffer.writeInt(maxOffset_bes);
-		buffer.writeInt(separationInterval_bes);
-		buffer.writeByte(mode_bes.index);
-
-		send_bes(new ClientboundCustomPayloadPacket(id, buffer));
+		send_bes(new TickPayload(maxOffset_bes, separationInterval_bes, mode_bes));
 	}
 
 	private void syncBlockEvents_bes() {
@@ -229,11 +198,17 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		}
 	}
 
-	private void send_bes(Packet<?> packet) {
+	private void send_bes(BESPayload payload) {
+		Packet<?> packet = null;
+
 		for (UUID uuid : connectedPlayers) {
 			ServerPlayer player = playerList.getPlayer(uuid);
 
 			if (player != null) {
+				if (packet == null) {
+					packet = new ClientboundCustomPayloadPacket(payload);
+				}
+
 				player.connection.send(packet);
 			}
 		}
