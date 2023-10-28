@@ -5,10 +5,13 @@
 	"compatibilityLevel": "JAVA_16",
 	"mixins": [
 		"common.BlockEntityMixin",
+		"common.ClientboundCustomPayloadPacketMixin",
 		"common.CommandsMixin",
 		"common.MinecraftServerMixin",
 		"common.PistonMovingBlockEntityMixin",
 		"common.PlayerListMixin",
+		"common.ServerboundCustomPayloadPacketMixin",
+		"common.ServerCommonPacketListenerImplMixin",
 		"common.ServerGamePacketListenerImplMixin",
 		"common.ServerLevelMixin"
 	],

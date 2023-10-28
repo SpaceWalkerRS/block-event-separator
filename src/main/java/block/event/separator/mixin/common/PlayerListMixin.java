@@ -12,6 +12,7 @@ import block.event.separator.interfaces.mixin.IMinecraftServer;
 import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.players.PlayerList;
 
 @Mixin(PlayerList.class)
@@ -25,7 +26,7 @@ public class PlayerListMixin {
 			value = "RETURN"
 		)
 	)
-	private void onPlayerJoin(Connection connection, ServerPlayer player, CallbackInfo ci) {
+	private void onPlayerJoin(Connection connection, ServerPlayer player, CommonListenerCookie cookie, CallbackInfo ci) {
 		((IMinecraftServer)server).onPlayerJoin_bes(player);
 	}
 
