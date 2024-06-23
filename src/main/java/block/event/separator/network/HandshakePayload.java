@@ -6,11 +6,10 @@ import block.event.separator.interfaces.mixin.IMinecraftServer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-public class HandshakePayload implements BESPayload {
+public class HandshakePayload implements Payload {
 
 	public String modVersion;
 
@@ -22,8 +21,8 @@ public class HandshakePayload implements BESPayload {
 	}
 
 	@Override
-	public ResourceLocation id() {
-		return new ResourceLocation(BlockEventSeparatorMod.MOD_ID, "handshake");
+	public String name() {
+		return "handshake";
 	}
 
 	@Override

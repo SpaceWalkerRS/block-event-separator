@@ -16,7 +16,8 @@ import block.event.separator.Counters;
 import block.event.separator.SeparationMode;
 import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
-import block.event.separator.network.BESPayload;
+import block.event.separator.network.Payload;
+import block.event.separator.network.PayloadWrapper;
 import block.event.separator.network.FreezePayload;
 import block.event.separator.network.HandshakePayload;
 import block.event.separator.network.TickPayload;
@@ -156,7 +157,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Override
 	public void onHandshake_bes(ServerPlayer player, String modVersion) {
 		if (connectedPlayers.add(player.getUUID())) {
-			player.connection.send(new ClientboundCustomPayloadPacket(new HandshakePayload(BlockEventSeparatorMod.MOD_VERSION)));
+			player.connection.send(new ClientboundCustomPayloadPacket(new PayloadWrapper(new HandshakePayload(BlockEventSeparatorMod.MOD_VERSION))));
 
 			playerList.sendPlayerPermissionLevel(player);
 		}
@@ -198,7 +199,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		}
 	}
 
-	private void send_bes(BESPayload payload) {
+	private void send_bes(Payload payload) {
 		Packet<?> packet = null;
 
 		for (UUID uuid : connectedPlayers) {
@@ -206,7 +207,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 			if (player != null) {
 				if (packet == null) {
-					packet = new ClientboundCustomPayloadPacket(payload);
+					packet = new ClientboundCustomPayloadPacket(new PayloadWrapper(payload));
 				}
 
 				player.connection.send(packet);

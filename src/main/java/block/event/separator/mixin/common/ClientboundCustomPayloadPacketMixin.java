@@ -1,31 +1,28 @@
 package block.event.separator.mixin.common;
 
+import java.util.ArrayList;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.network.Payloads;
+import block.event.separator.network.PayloadWrapper;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 
 @Mixin(ClientboundCustomPayloadPacket.class)
 public class ClientboundCustomPayloadPacketMixin {
 
 	@Inject(
-		method = "readPayload",
-		cancellable = true,
+		method = "method_58270",
 		at = @At(
-			value = "INVOKE",
-			target = "Lnet/minecraft/network/protocol/common/ClientboundCustomPayloadPacket;readUnknownPayload(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/network/protocol/common/custom/DiscardedPayload;"
+			value = "HEAD"
 		)
 	)
-	private static void readPayload_bes(ResourceLocation channel, FriendlyByteBuf buffer, CallbackInfoReturnable<CustomPacketPayload> cir) {
-		if (Payloads.TYPES.containsKey(channel)) {
-			cir.setReturnValue(Payloads.READER.apply(buffer));
-		}
+	private static void bes$registerRsmmPayloads(ArrayList<CustomPacketPayload.TypeAndCodec<? super RegistryFriendlyByteBuf, ?>> typesAndCodecs, CallbackInfo ci) {
+		typesAndCodecs.add(new CustomPacketPayload.TypeAndCodec<>(PayloadWrapper.TYPE, PayloadWrapper.STREAM_CODEC));
 	}
 }

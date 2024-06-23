@@ -48,12 +48,6 @@
 			"links": {
 				"modmenu.discord": "https://discord.gg/EJC9zkX"
 			}
-		},
-		"multiconnect": {
-			"custom_payloads": {
-				"allowed_clientbound": "block-event-separator:*",
-				"allowed_serverbound": "block-event-separator:*"
-			}
 		}
 	}
 }

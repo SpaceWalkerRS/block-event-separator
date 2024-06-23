@@ -1,15 +1,13 @@
 package block.event.separator.network;
 
-import block.event.separator.BlockEventSeparatorMod;
 import block.event.separator.interfaces.mixin.IMinecraft;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-public class FreezePayload implements BESPayload {
+public class FreezePayload implements Payload {
 
 	private boolean frozen;
 
@@ -21,8 +19,8 @@ public class FreezePayload implements BESPayload {
 	}
 
 	@Override
-	public ResourceLocation id() {
-		return new ResourceLocation(BlockEventSeparatorMod.MOD_ID, "freeze");
+	public String name() {
+		return "freeze";
 	}
 
 	@Override

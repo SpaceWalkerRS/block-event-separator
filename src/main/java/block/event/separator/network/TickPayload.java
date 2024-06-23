@@ -6,11 +6,10 @@ import block.event.separator.interfaces.mixin.IMinecraft;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-public class TickPayload implements BESPayload {
+public class TickPayload implements Payload {
 
 	private int maxOffset;
 	private int separationInterval;
@@ -26,8 +25,8 @@ public class TickPayload implements BESPayload {
 	}
 
 	@Override
-	public ResourceLocation id() {
-		return new ResourceLocation(BlockEventSeparatorMod.MOD_ID, "next_tick");
+	public String name() {
+		return "next_tick";
 	}
 
 	@Override

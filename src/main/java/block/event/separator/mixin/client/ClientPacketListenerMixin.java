@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import block.event.separator.BlockEventSeparatorMod;
-import block.event.separator.network.BESPayload;
+import block.event.separator.network.PayloadWrapper;
 import block.event.separator.network.HandshakePayload;
 
 import net.minecraft.client.Minecraft;
@@ -31,8 +31,8 @@ public abstract class ClientPacketListenerMixin extends ClientCommonPacketListen
 			value = "RETURN"
 		)
 	)
-	private void onConnect(ClientboundLoginPacket loginPacket, CallbackInfo ci) {
-		send(new ServerboundCustomPayloadPacket(new HandshakePayload(BlockEventSeparatorMod.MOD_VERSION)));
+	private void bes$handleLogin(ClientboundLoginPacket packet, CallbackInfo ci) {
+		send(new ServerboundCustomPayloadPacket(new PayloadWrapper(new HandshakePayload(BlockEventSeparatorMod.MOD_VERSION))));
 	}
 
 	@Inject(
@@ -42,9 +42,9 @@ public abstract class ClientPacketListenerMixin extends ClientCommonPacketListen
 			value = "HEAD"
 		)
 	)
-	private void handleCustomPayload(CustomPacketPayload customPayload, CallbackInfo ci) {
-		if (customPayload instanceof BESPayload payload) {
-			payload.handle(minecraft);
+	private void bes$handleCustomPayload(CustomPacketPayload packet, CallbackInfo ci) {
+		if (packet instanceof PayloadWrapper p) {
+			p.payload().handle(minecraft);
 			ci.cancel();
 		}
 	}
