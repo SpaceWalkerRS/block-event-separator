@@ -9,11 +9,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import block.event.separator.Counters;
 import block.event.separator.interfaces.mixin.ILevel;
 import block.event.separator.interfaces.mixin.IPistonMovingBlockEntity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.TickRateManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -27,6 +27,7 @@ public class LevelMixin implements ILevel {
 	@Shadow private boolean tickingBlockEntities;
 
 	@Shadow private boolean isClientSide() { return false; }
+	@Shadow private TickRateManager tickRateManager() { return null; }
 	@Shadow private boolean shouldTickBlocksAt(long pos) { return false; }
 	@Shadow private BlockEntity getBlockEntity(BlockPos pos) { return null; }
 
@@ -38,7 +39,7 @@ public class LevelMixin implements ILevel {
 		)
 	)
 	private void cancelTick(CallbackInfo ci) {
-		if (isClientSide() && Counters.frozen) {
+		if (isClientSide() && !tickRateManager().runsNormally()) {
 			ci.cancel();
 		}
 	}

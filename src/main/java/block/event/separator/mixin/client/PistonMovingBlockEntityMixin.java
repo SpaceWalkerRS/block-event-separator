@@ -70,11 +70,7 @@ public abstract class PistonMovingBlockEntityMixin extends BlockEntity implement
 				progressO = progressO_bes;
 				gs_actualLastProgress = progressO_bes;
 
-				if (Counters.frozen) {
-					partialTick = TimerHelper.freezePartialTick;
-				} else {
-					partialTick = TimerHelper.savedPartialTick;
-				}
+				partialTick = TimerHelper.savedPartialTick;
 			}
 
 			float p;

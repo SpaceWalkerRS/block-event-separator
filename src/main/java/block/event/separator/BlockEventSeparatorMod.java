@@ -1,6 +1,5 @@
 package block.event.separator;
 
-import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -10,9 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Suppliers;
 
-import net.fabricmc.api.ModInitializer;
-
-public class BlockEventSeparatorMod implements ModInitializer {
+public class BlockEventSeparatorMod {
 
 	public static final String MOD_ID = "block-event-separator";
 	public static final String MOD_NAME = "Block Event Separator";
@@ -33,13 +30,6 @@ public class BlockEventSeparatorMod implements ModInitializer {
 	private static int serverSeparationInterval = 1;
 	private static int clientSeparationInterval = 1;
 	private static AnimationMode animationMode = AnimationMode.DEFAULT;
-
-	private static Field process_entities;
-
-	@Override
-	public void onInitialize() {
-		detectCarpet();
-	}
 
 	public static SeparationMode getServerSeparationMode() {
 		return serverSeparationMode;
@@ -104,26 +94,5 @@ public class BlockEventSeparatorMod implements ModInitializer {
 
 	public static void addAnimationModeListener(Runnable listener) {
 		ANIMATION_MODE_LISTENERS.add(listener);
-	}
-
-	private static void detectCarpet() {
-		try {
-			Class<?> TickSpeed = Class.forName("carpet.helpers.TickSpeed");
-			process_entities = TickSpeed.getField("process_entities");
-		} catch (ClassNotFoundException | NoSuchFieldException | SecurityException e) {
-
-		}
-	}
-
-	public static boolean isFrozen() {
-		if (process_entities != null) {
-			try {
-				return !process_entities.getBoolean(null);
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-
-			}
-		}
-
-		return false;
 	}
 }

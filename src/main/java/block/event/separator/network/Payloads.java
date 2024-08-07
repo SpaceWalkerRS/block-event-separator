@@ -42,7 +42,7 @@ public class Payloads {
 	}
 
 	private static void register(Payload payload) {
-		ResourceLocation id = new ResourceLocation(BlockEventSeparatorMod.MOD_ID, payload.name());
+		ResourceLocation id = ResourceLocation.fromNamespaceAndPath(BlockEventSeparatorMod.MOD_ID, payload.name());
 		Class<? extends Payload> type = payload.getClass();
 
 		if (TYPES.containsKey(id)) {
@@ -58,7 +58,6 @@ public class Payloads {
 
 	static {
 		register(new HandshakePayload());
-		register(new FreezePayload());
 		register(new TickPayload());
 	}
 }

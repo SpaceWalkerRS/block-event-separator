@@ -18,7 +18,6 @@ import block.event.separator.interfaces.mixin.IMinecraftServer;
 import block.event.separator.interfaces.mixin.IServerLevel;
 import block.event.separator.network.Payload;
 import block.event.separator.network.PayloadWrapper;
-import block.event.separator.network.FreezePayload;
 import block.event.separator.network.HandshakePayload;
 import block.event.separator.network.TickPayload;
 import block.event.separator.utils.MathUtils;
@@ -27,6 +26,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerTickRateManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerConnectionListener;
@@ -40,12 +40,12 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Shadow private int tickCount;
 	@Shadow private ProfilerFiller profiler;
 	@Shadow private PlayerList playerList;
+	@Shadow private ServerTickRateManager tickRateManager;
 
 	private final Set<UUID> connectedPlayers = new HashSet<>();
 
 	private SeparationMode mode_bes;
 	private int separationInterval_bes;
-	private boolean frozen_bes;
 
 	// These are the maximum animation offsets of the past few ticks.
 	private int prevPrevMaxOffset_bes;
@@ -72,14 +72,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 			value = "HEAD"
 		)
 	)
-	private void cancelTick(BooleanSupplier isAheadOfTime, CallbackInfo ci) {
-		boolean wasFrozen = frozen_bes;
-		frozen_bes = BlockEventSeparatorMod.isFrozen();
-
-		if (frozen_bes != wasFrozen) {
-			syncFreeze_bes();
-		}
-
+	private void cancelTick(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
 		if (subticks_bes > 0) {
 			// G4mespeed relies on time sync packets
 			// to sync the client to the server.
@@ -100,7 +93,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		)
 	)
 	private void adjustNextTickTime(CallbackInfo ci) {
-		if (frozen_bes || isPaused()) {
+		if (!tickRateManager.runsNormally() || isPaused()) {
 			return;
 		}
 
@@ -166,10 +159,6 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Override
 	public boolean isBesClient(ServerPlayer player) {
 		return connectedPlayers.contains(player.getUUID());
-	}
-
-	private void syncFreeze_bes() {
-		send_bes(new FreezePayload(frozen_bes));
 	}
 
 	private void syncTime_bes() {
