@@ -47,7 +47,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 	private int gcp_microtick; // field from G4mespeed Capture & Playback
 
 	private ServerLevelMixin(WritableLevelData data, ResourceKey<Level> resourceKey, RegistryAccess registries, Holder<DimensionType> dimensionType, Supplier<ProfilerFiller> profiler, boolean isClientSide, boolean isDebug, long seed, int maxChainedNeighborUpdates) {
-		super(data, resourceKey, registries, dimensionType, profiler, isClientSide, isDebug, seed, maxChainedNeighborUpdates);
+		super(data, resourceKey, registries, dimensionType, isClientSide, isDebug, seed, maxChainedNeighborUpdates);
 	}
 
 	@Shadow private boolean doBlockEvent(BlockEventData data) { return false; }

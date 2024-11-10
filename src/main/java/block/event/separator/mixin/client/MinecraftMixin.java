@@ -22,7 +22,7 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 @Mixin(Minecraft.class)
 public class MinecraftMixin implements IMinecraft {
 
-	@Shadow private DeltaTracker.Timer timer;
+	@Shadow private DeltaTracker.Timer deltaTracker;
 	@Shadow private MultiPlayerGameMode gameMode;
 	@Shadow private ClientLevel level;
 	@Shadow private boolean pause;

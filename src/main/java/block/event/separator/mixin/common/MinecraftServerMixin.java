@@ -29,8 +29,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTickRateManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerConnectionListener;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.GameRules;
 
@@ -38,7 +38,6 @@ import net.minecraft.world.level.GameRules;
 public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 	@Shadow private int tickCount;
-	@Shadow private ProfilerFiller profiler;
 	@Shadow private PlayerList playerList;
 	@Shadow private ServerTickRateManager tickRateManager;
 
@@ -63,7 +62,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	private int maxMovingBlocksTotal_bes;
 
 	@Shadow protected abstract Iterable<ServerLevel> getAllLevels();
-	@Shadow protected abstract ServerConnectionListener getConnection();
+	@Shadow protected abstract void tickConnection();
 
 	@Inject(
 		method = "tickChildren",
@@ -80,7 +79,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 				syncTime_bes();
 			}
 			// keep packet handling going
-			getConnection().tick();
+			tickConnection();
 
 			ci.cancel();
 		}
@@ -162,6 +161,8 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	}
 
 	private void syncTime_bes() {
+		ProfilerFiller profiler = Profiler.get();
+
 		for (ServerLevel level : getAllLevels()) {
 			profiler.push("timeSync");
 
