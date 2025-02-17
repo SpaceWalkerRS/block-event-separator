@@ -16,6 +16,7 @@ import block.event.separator.interfaces.mixin.IMinecraft;
 import block.event.separator.utils.MathUtils;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.DeltaTracker.Timer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 
@@ -152,5 +153,10 @@ public class MinecraftMixin implements IMinecraft {
 		if (BlockEventSeparatorMod.getAnimationMode() == AnimationMode.FIXED_SPEED) {
 			((ILevel)level).tickMovingBlocks_bes();
 		}
+	}
+
+	@Override
+	public Timer getTimer_bes() {
+		return timer;
 	}
 }

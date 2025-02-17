@@ -6,8 +6,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.TimerHelper;
+import block.event.separator.interfaces.mixin.IMinecraft;
 
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 
 @Mixin(DeltaTracker.Timer.class)
 public class DeltaTrackerTimerMixin {
@@ -21,6 +23,8 @@ public class DeltaTrackerTimerMixin {
 		)
 	)
 	private void adjustPartialTick(boolean bl, CallbackInfoReturnable<Float> cir) {
-		cir.setReturnValue(TimerHelper.adjustPartialTick(cir.getReturnValue()));
+		if ((Object)this == ((IMinecraft)Minecraft.getInstance()).getTimer_bes()) {
+			cir.setReturnValue(TimerHelper.adjustPartialTick(cir.getReturnValue()));
+		}
 	}
 }
