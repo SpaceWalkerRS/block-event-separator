@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import block.event.separator.BlockEvent;
 import block.event.separator.BlockEventSeparatorMod;
@@ -87,17 +87,25 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 		}
 	}
 
-	@Redirect(
-		method = "runBlockEvents",
+	@Inject(
+		method = "doBlockEvent",
 		at = @At(
-			value = "INVOKE",
-			target = "Lnet/minecraft/server/level/ServerLevel;doBlockEvent(Lnet/minecraft/world/level/BlockEventData;)Z"
+			value = "HEAD"
 		)
 	)
-	private boolean cancelBlockEventPacket(ServerLevel level, BlockEventData data) {
+	private void startBlockEvent(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
 		Counters.movingBlocksThisEvent = 0;
+	}
 
-		if (doBlockEvent(data)) {
+	@Inject(
+		method = "doBlockEvent",
+		cancellable = true,
+		at = @At(
+			value = "RETURN"
+		)
+	)
+	private void cancelBlockEventPacket(BlockEventData data, CallbackInfoReturnable<Boolean> cir) {
+		if (cir.getReturnValue()) {
 			// G4mespeed Capture & Playback can do multiple block events
 			// per cycle, in which case we have to adjust our depth value.
 			Counters.currentDepth = Math.max(Counters.currentDepth, gcp_microtick);
@@ -116,7 +124,7 @@ public abstract class ServerLevelMixin extends Level implements IServerLevel {
 			successfulBlockEvents_bes.add(blockEvent);
 		}
 
-		return false;
+		cir.setReturnValue(false);
 	}
 
 	@Inject(
