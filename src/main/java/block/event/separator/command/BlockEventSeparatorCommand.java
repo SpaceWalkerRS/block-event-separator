@@ -77,8 +77,7 @@ public class BlockEventSeparatorCommand {
 					append("Block event separation is currently running in [").
 					append(Component.literal(mode.name).withStyle(style -> style.
 						applyFormat(ChatFormatting.GREEN).
-						withHoverEvent(new HoverEvent(
-							HoverEvent.Action.SHOW_TEXT,
+						withHoverEvent(new HoverEvent.ShowText(
 							Component.literal(mode.description))))).
 					append("] mode");
 			}
@@ -104,8 +103,7 @@ public class BlockEventSeparatorCommand {
 					append("Enabled block event separation in [").
 					append(Component.literal(mode.name).withStyle(style -> style.
 						applyFormat(ChatFormatting.GREEN).
-						withHoverEvent(new HoverEvent(
-							HoverEvent.Action.SHOW_TEXT,
+						withHoverEvent(new HoverEvent.ShowText(
 							Component.literal(mode.description))))).
 					append("] mode");
 			}
