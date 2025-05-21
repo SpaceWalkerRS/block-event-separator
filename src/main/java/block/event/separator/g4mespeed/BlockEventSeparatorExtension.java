@@ -19,7 +19,7 @@ public class BlockEventSeparatorExtension implements GSIExtension {
 	public static final String NAME = BlockEventSeparatorMod.MOD_NAME;
 	/* "BESM" in ASCII as HEX */
 	public static final GSExtensionUID UID = new GSExtensionUID(0x4245534D);
-	public static final GSVersion VERSION = decodeVersionString(BlockEventSeparatorMod.MOD_VERSION);
+	public static final GSVersion VERSION = new GSVersion(BlockEventSeparatorMod.MOD_VERSION);
 	
 	public static final GSExtensionInfo INFO = new GSExtensionInfo(NAME, UID, VERSION);
 	
@@ -61,21 +61,5 @@ public class BlockEventSeparatorExtension implements GSIExtension {
 	@Override
 	public GSExtensionInfo getInfo() {
 		return INFO;
-	}
-	
-	private static GSVersion decodeVersionString(String modVersion) {
-		int majorVersion = 1, minorVersion = 0, patchVersion = 0;
-		
-		String[] args = BlockEventSeparatorMod.MOD_VERSION.split("\\.");
-		if (args.length == 3) {
-			try {
-				majorVersion = Integer.parseInt(args[0]);
-				minorVersion = Integer.parseInt(args[1]);
-				patchVersion = Integer.parseInt(args[2]);
-			} catch (NumberFormatException e) {
-			}
-		}
-		
-		return new GSVersion(majorVersion, minorVersion, patchVersion);
 	}
 }
