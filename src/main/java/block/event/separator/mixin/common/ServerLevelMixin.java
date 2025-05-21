@@ -33,7 +33,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.WritableLevelData;
 
-@Mixin(ServerLevel.class)
+@Mixin(
+	value = ServerLevel.class,
+	priority = 1001 // for the doBlockEvent RETURN @Inject: to allow other mods' @Injects to work, since we cancel!
+)
 public abstract class ServerLevelMixin extends Level implements IServerLevel {
 
 	@Shadow private MinecraftServer server;
