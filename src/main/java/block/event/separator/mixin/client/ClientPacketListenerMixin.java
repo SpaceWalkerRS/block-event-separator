@@ -38,6 +38,9 @@ public class ClientPacketListenerMixin {
 		)
 	)
 	private void onConnect(ClientboundLoginPacket loginPacket, CallbackInfo ci) {
+		BlockEventSeparatorMod.setClientSeparationMode(SeparationMode.OFF);
+		BlockEventSeparatorMod.setClientSeparationInterval(1);
+
 		String namespace = BlockEventSeparatorMod.MOD_ID;
 		String path = "handshake";
 		ResourceLocation id = new ResourceLocation(namespace, path);
