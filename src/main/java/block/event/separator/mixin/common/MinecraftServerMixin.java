@@ -66,6 +66,17 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Shadow protected abstract ServerConnectionListener getConnection();
 
 	@Inject(
+		method = "loadLevel",
+		at = @At(
+			value = "HEAD"
+		)
+	)
+	private void resetServerSettings(CallbackInfo ci) {
+		BlockEventSeparatorMod.serverSeparationMode = SeparationMode.OFF;
+		BlockEventSeparatorMod.serverSeparationInterval = 1;
+	}
+
+	@Inject(
 		method = "tickChildren",
 		cancellable = true,
 		at = @At(
