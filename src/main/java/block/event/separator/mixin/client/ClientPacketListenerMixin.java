@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import block.event.separator.BlockEventSeparatorMod;
+import block.event.separator.SeparationMode;
 import block.event.separator.network.PayloadWrapper;
 import block.event.separator.network.HandshakePayload;
 
@@ -32,6 +33,9 @@ public abstract class ClientPacketListenerMixin extends ClientCommonPacketListen
 		)
 	)
 	private void bes$handleLogin(ClientboundLoginPacket packet, CallbackInfo ci) {
+		BlockEventSeparatorMod.setClientSeparationMode(SeparationMode.OFF);
+		BlockEventSeparatorMod.setClientSeparationInterval(1);
+
 		send(new ServerboundCustomPayloadPacket(new PayloadWrapper(new HandshakePayload(BlockEventSeparatorMod.MOD_VERSION))));
 	}
 
