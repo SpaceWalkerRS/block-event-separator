@@ -14,6 +14,7 @@ import block.event.separator.Counters;
 import block.event.separator.interfaces.mixin.ILevel;
 import block.event.separator.interfaces.mixin.IMinecraft;
 import block.event.separator.utils.MathUtils;
+
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.DeltaTracker.Timer;
@@ -46,7 +47,7 @@ public class MinecraftMixin implements IMinecraft {
 		at = @At(
 			value = "INVOKE_STRING",
 			target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V",
-			args = "ldc=scheduledExecutables"
+			args = "ldc=scheduledPacketProcessing"
 		)
 	)
 	private void preTick(boolean isRunning, CallbackInfo ci, int ticksThisFrame) {
