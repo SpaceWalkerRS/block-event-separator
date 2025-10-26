@@ -113,7 +113,7 @@ public class MinecraftMixin implements IMinecraft {
 	}
 
 	@Inject(
-		method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;)V",
+		method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V",
 		at = @At(
 			value = "HEAD"
 		)
