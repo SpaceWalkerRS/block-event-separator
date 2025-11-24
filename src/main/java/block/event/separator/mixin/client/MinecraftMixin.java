@@ -121,6 +121,7 @@ public class MinecraftMixin implements IMinecraft {
 	)
 	private void onDisconnect(CallbackInfo ci) {
 		BlockEventSeparatorMod.isConnectedToBesServer = false;
+		BlockEventSeparatorMod.resetClientSettings();
 	}
 
 	@Override

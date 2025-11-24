@@ -95,4 +95,15 @@ public class BlockEventSeparatorMod {
 	public static void addAnimationModeListener(Runnable listener) {
 		ANIMATION_MODE_LISTENERS.add(listener);
 	}
+
+	public static void resetClientSettings() {
+		setClientSeparationMode(SeparationMode.OFF);
+		setClientSeparationInterval(1);
+		setAnimationMode(AnimationMode.DEFAULT);
+	}
+
+	public static void resetServerSettings() {
+		setServerSeparationMode(SeparationMode.OFF);
+		setServerSeparationInterval(1);
+	}
 }

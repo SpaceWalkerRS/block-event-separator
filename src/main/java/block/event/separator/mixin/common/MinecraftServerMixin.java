@@ -71,8 +71,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 		)
 	)
 	private void resetServerSettings(CallbackInfo ci) {
-		BlockEventSeparatorMod.setServerSeparationMode(SeparationMode.OFF);
-		BlockEventSeparatorMod.setServerSeparationInterval(1);
+		BlockEventSeparatorMod.resetServerSettings();
 	}
 
 	@Inject(
