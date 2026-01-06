@@ -20,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 
 public class BlockEventSeparatorCommand {
 
@@ -40,7 +41,7 @@ public class BlockEventSeparatorCommand {
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> builder = Commands.
 			literal("blockeventseparator").
-			requires(source -> source.hasPermission(2) && isBesClient(source)).
+			requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR) && isBesClient(source)).
 			executes(context -> queryMode(context.getSource())).
 			then(Commands.
 				literal("mode").

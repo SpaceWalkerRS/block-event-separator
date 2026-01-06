@@ -32,7 +32,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements IMinecraftServer {
@@ -178,7 +178,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 			long gameTime = level.getGameTime();
 			long dayTime = level.getDayTime();
-			boolean doDayLightCycle = level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT);
+			boolean doDayLightCycle = level.getGameRules().get(GameRules.ADVANCE_TIME);
 
 			Packet<?> packet = new ClientboundSetTimePacket(gameTime, dayTime, doDayLightCycle);
 			playerList.broadcastAll(packet, level.dimension());

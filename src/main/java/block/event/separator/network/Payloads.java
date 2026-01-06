@@ -7,27 +7,27 @@ import java.util.Map;
 import block.event.separator.BlockEventSeparatorMod;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class Payloads {
 
-	public static final Map<Class<? extends Payload>, ResourceLocation> IDS = new HashMap<>();
-	public static final Map<ResourceLocation, Class<? extends Payload>> TYPES = new HashMap<>();
+	public static final Map<Class<? extends Payload>, Identifier> IDS = new HashMap<>();
+	public static final Map<Identifier, Class<? extends Payload>> TYPES = new HashMap<>();
 
 	public static void encode(PayloadWrapper wrapper, FriendlyByteBuf buffer) {
 		Payload packet = wrapper.payload();
-		ResourceLocation id = Payloads.IDS.get(wrapper.payload().getClass());
+		Identifier id = Payloads.IDS.get(wrapper.payload().getClass());
 
 		if (id == null) {
 			throw new IllegalStateException("Unable to encode packet: " + packet.getClass());
 		}
 
-		buffer.writeResourceLocation(id);
+		buffer.writeIdentifier(id);
 		packet.write(buffer);
 	}
 
 	public static PayloadWrapper decode(FriendlyByteBuf buffer) {
-		ResourceLocation id = buffer.readResourceLocation();
+		Identifier id = buffer.readIdentifier();
 
 		Payload packet;
 		try {
@@ -42,7 +42,7 @@ public class Payloads {
 	}
 
 	private static void register(Payload payload) {
-		ResourceLocation id = ResourceLocation.fromNamespaceAndPath(BlockEventSeparatorMod.MOD_ID, payload.name());
+		Identifier id = Identifier.fromNamespaceAndPath(BlockEventSeparatorMod.MOD_ID, payload.name());
 		Class<? extends Payload> type = payload.getClass();
 
 		if (TYPES.containsKey(id)) {

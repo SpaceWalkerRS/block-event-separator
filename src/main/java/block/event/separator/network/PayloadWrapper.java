@@ -5,12 +5,12 @@ import block.event.separator.BlockEventSeparatorMod;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record PayloadWrapper(Payload payload) implements CustomPacketPayload {
 
 	public static final StreamCodec<FriendlyByteBuf, PayloadWrapper> STREAM_CODEC = CustomPacketPayload.codec(Payloads::encode, Payloads::decode);
-	public static final Type<PayloadWrapper> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(BlockEventSeparatorMod.MOD_ID, "payloads"));
+	public static final Type<PayloadWrapper> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(BlockEventSeparatorMod.MOD_ID, "payloads"));
 
 	public PayloadWrapper(Payload payload) {
 		this.payload = payload;
