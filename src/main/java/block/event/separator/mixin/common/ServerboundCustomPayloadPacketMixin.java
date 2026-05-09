@@ -17,7 +17,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 public class ServerboundCustomPayloadPacketMixin {
 
 	@Inject(
-			method = "method_58271",
+			method = "lambda$static$1",
 			at = @At(
 				value = "HEAD"
 			)

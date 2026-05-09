@@ -31,7 +31,7 @@
 	],
 
 	"depends": {
-		"minecraft": "1.21.x"
+		"minecraft": "26.1.x"
 	},
 	"breaks": {
 		"g4mespeed": "<1.3.0"

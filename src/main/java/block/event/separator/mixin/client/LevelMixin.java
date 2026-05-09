@@ -55,7 +55,7 @@ public class LevelMixin implements ILevel {
 			if (pos == null) {
 				continue;
 			}
-			long l = ChunkPos.asLong(pos);
+			long l = ChunkPos.pack(pos);
 
 			if (!shouldTickBlocksAt(l)) {
 				continue;

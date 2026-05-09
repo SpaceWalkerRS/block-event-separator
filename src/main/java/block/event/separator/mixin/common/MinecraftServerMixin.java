@@ -24,15 +24,11 @@ import block.event.separator.utils.MathUtils;
 
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTickRateManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.util.profiling.Profiler;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.level.gamerules.GameRules;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements IMinecraftServer {
@@ -63,6 +59,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
 	@Shadow protected abstract Iterable<ServerLevel> getAllLevels();
 	@Shadow protected abstract void tickConnection();
+	@Shadow protected abstract void forceGameTimeSynchronization();
 
 	@Inject(
 		method = "loadLevel",
@@ -86,7 +83,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 			// G4mespeed relies on time sync packets
 			// to sync the client to the server.
 			if (tickCount % 20 == 0) {
-				syncTime_bes();
+				forceGameTimeSynchronization();
 			}
 			// keep packet handling going
 			tickConnection();
@@ -168,23 +165,6 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 	@Override
 	public boolean isBesClient(ServerPlayer player) {
 		return connectedPlayers.contains(player.getUUID());
-	}
-
-	private void syncTime_bes() {
-		ProfilerFiller profiler = Profiler.get();
-
-		for (ServerLevel level : getAllLevels()) {
-			profiler.push("timeSync");
-
-			long gameTime = level.getGameTime();
-			long dayTime = level.getDayTime();
-			boolean doDayLightCycle = level.getGameRules().get(GameRules.ADVANCE_TIME);
-
-			Packet<?> packet = new ClientboundSetTimePacket(gameTime, dayTime, doDayLightCycle);
-			playerList.broadcastAll(packet, level.dimension());
-
-			profiler.pop();
-		}
 	}
 
 	private void syncNextTick_bes() {

@@ -163,7 +163,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 				AnimationMode mode = BlockEventSeparatorMod.getAnimationMode();
 
 				Component text = Component.literal("Set animation mode to " + mode.name);
-				player.displayClientMessage(text, true);
+				player.sendOverlayMessage(text);
 			}
 		}, GSEKeyEventType.PRESS);
 	}
