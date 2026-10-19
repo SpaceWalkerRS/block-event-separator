@@ -3,8 +3,8 @@ package block.event.separator.g4mespeed;
 import com.g4mesoft.core.GSIModule;
 import com.g4mesoft.core.GSIModuleManager;
 import com.g4mesoft.hotkey.GSEKeyEventType;
-import com.g4mesoft.hotkey.GSKeyCode;
 import com.g4mesoft.hotkey.GSKeyManager;
+import com.g4mesoft.hotkey.GSMultiKey;
 import com.g4mesoft.module.tps.GSTpsModule;
 import com.g4mesoft.setting.GSISettingChangeListener;
 import com.g4mesoft.setting.GSSetting;
@@ -138,7 +138,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 
 	@Override
 	public void registerHotkeys(GSKeyManager keyManager) {
-		keyManager.registerKey("toggleSeparationMode", KEY_CATEGORY, GSKeyCode.UNKNOWN_KEY, () -> {
+		keyManager.registerKey("toggleSeparationMode", KEY_CATEGORY, GSMultiKey.UNKNOWN_KEY, () -> {
 			int nextValue = sSeparationMode.get() + sSeparationMode.getInterval();
 
 			if (nextValue > sSeparationMode.getMin()) {
@@ -147,7 +147,7 @@ public class BlockEventSeparatorModule implements GSIModule {
 
 			sSeparationMode.set(nextValue);
 		}, GSEKeyEventType.PRESS);
-		keyManager.registerKey("toggleAnimationMode", KEY_CATEGORY, GSKeyCode.UNKNOWN_KEY, () -> {
+		keyManager.registerKey("toggleAnimationMode", KEY_CATEGORY, GSMultiKey.UNKNOWN_KEY, () -> {
 			int nextValue = cAnimationMode.get() + cAnimationMode.getInterval();
 
 			if (nextValue > cAnimationMode.getMax()) {
